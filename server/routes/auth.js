@@ -19,13 +19,15 @@ function createToken(user) {
 
 function createTransporter() {
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const port = parseInt(process.env.SMTP_PORT) || 465;
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST || "smtp.gmail.com",
-      port: parseInt(process.env.SMTP_PORT) || 587,
-      secure: process.env.SMTP_PORT === "465",
+      port,
+      secure: port === 465,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      connectionTimeout: 10000,
-      socketTimeout: 10000,
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 15000,
+      socketTimeout: 15000,
     });
   }
   return null;
@@ -89,7 +91,7 @@ async function sendOtpEmail(email, otp, type = "signup") {
 
   if (await sendEmailViaResend(to, subject, html)) return true;
   if (await sendEmailViaSmtp(to, subject, html)) return true;
-  console.log(`[Auth] Email delivery failed — OTP for ${email}: ${otp}`);
+  console.error(`[Auth] Email delivery FAILED for ${email} (type: ${type})`);
   return false;
 }
 
@@ -138,8 +140,13 @@ router.post("/signup", async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await Otp.create({ email, otp, type: "signup", expiresAt });
 
-    sendOtpEmail(email, otp, "signup");
-    console.log(`[Auth] Signup: ${email} | OTP: ${otp}`);
+    const sent = await sendOtpEmail(email, otp, "signup");
+    if (!sent) {
+      await User.deleteOne({ email });
+      await Otp.deleteMany({ email });
+      return res.status(500).json({ error: "Failed to send OTP email. Please try again." });
+    }
+    console.log(`[Auth] Signup OTP sent: ${email}`);
     res.json({ message: "OTP sent to email", email });
   } catch (err) {
     console.error("[Auth] Signup error:", err.message);
@@ -164,8 +171,12 @@ router.post("/resend-otp", async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
     await Otp.create({ email, otp, type, expiresAt });
 
-    sendOtpEmail(email, otp, type);
-    console.log(`[Auth] Resend OTP ${type}: ${email} | OTP: ${otp}`);
+    const sent = await sendOtpEmail(email, otp, type);
+    if (!sent) {
+      await Otp.deleteOne({ email, otp });
+      return res.status(500).json({ error: "Failed to send OTP email. Please try again." });
+    }
+    console.log(`[Auth] Resend OTP ${type}: ${email}`);
     res.json({ message: "OTP resent", email });
   } catch (err) {
     console.error("[Auth] Resend OTP error:", err.message);
@@ -257,8 +268,13 @@ router.post("/forgot-password", async (req, res) => {
     await Otp.create({ email, otp, type: "reset", expiresAt });
     await User.updateOne({ email }, { resetOtp: otp, resetOtpExpires: expiresAt });
 
-    sendOtpEmail(email, otp, "reset");
-    console.log(`[Auth] Forgot password OTP: ${email} | OTP: ${otp}`);
+    const sent = await sendOtpEmail(email, otp, "reset");
+    if (!sent) {
+      await Otp.deleteOne({ email, otp });
+      await User.updateOne({ email }, { resetOtp: null, resetOtpExpires: null });
+      return res.status(500).json({ error: "Failed to send OTP email. Please try again." });
+    }
+    console.log(`[Auth] Forgot password OTP sent: ${email}`);
     res.json({ message: "Reset OTP sent to email", email });
   } catch (err) {
     console.error("[Auth] Forgot password error:", err.message);
