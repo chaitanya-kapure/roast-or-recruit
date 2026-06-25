@@ -28,6 +28,7 @@ function createTransporter() {
       tls: { rejectUnauthorized: false },
       connectionTimeout: 15000,
       socketTimeout: 15000,
+      family: 4,
     });
   }
   return null;
