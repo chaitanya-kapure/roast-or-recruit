@@ -4,7 +4,7 @@ import { ArrowLeft, User, Mail, ShieldCheck, Lock, Eye, EyeOff, LogOut } from "l
 import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Profile() {
-  const { user, token, logout } = useAuth();
+  const { user, token, loading, logout } = useAuth();
   const navigate = useNavigate();
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -43,6 +43,7 @@ export default function Profile() {
     navigate("/");
   };
 
+  if (loading) return null;
   if (!user) {
     return (
       <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-4">

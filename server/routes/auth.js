@@ -319,9 +319,9 @@ router.post("/verify-otp", async (req, res) => {
 
     await Otp.findByIdAndUpdate(record._id, { used: true });
     await User.findOneAndUpdate({ email }, { verified: true });
-    const user = await User.findOne({ email }).select("_id email name");
+    const user = await User.findOne({ email }).select("_id email name verified");
     const token = createToken(user);
-    res.json({ token, user: { id: user._id, email: user.email, name: user.name } });
+    res.json({ token, user: { id: user._id, email: user.email, name: user.name, verified: user.verified } });
   } catch (err) {
     console.error("[Auth] Verify OTP error:", err.message);
     res.status(500).json({ error: err.message });
@@ -353,7 +353,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Invalid email or password" });
     }
     const token = createToken(user);
-    res.json({ token, user: { id: user._id, email: user.email, name: user.name } });
+    res.json({ token, user: { id: user._id, email: user.email, name: user.name, verified: user.verified } });
   } catch (err) {
     console.error("[Auth] Login error:", err.message);
     res.status(500).json({ error: err.message });
