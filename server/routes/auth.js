@@ -66,7 +66,7 @@ async function sendEmailViaResend(to, subject, html) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "RoastOrRecruit <onboarding@resend.dev>",
+        from: "RoastOrRecruit Security Team <onboarding@resend.dev>",
         to,
         subject,
         html,
@@ -90,7 +90,7 @@ async function sendEmailViaSmtp(to, subject, html) {
   if (!transporter) return false;
   try {
     await transporter.sendMail({
-      from: `"RoastOrRecruit" <${process.env.SMTP_USER}>`,
+      from: `"RoastOrRecruit Security Team" <${process.env.SMTP_USER}>`,
       to,
       subject,
       html,
@@ -103,12 +103,86 @@ async function sendEmailViaSmtp(to, subject, html) {
   }
 }
 
+function buildOtpEmailHtml(otp, type = "signup") {
+  const title = type === "reset" ? "Password Reset Code" : "Email Verification Code";
+  const subtitle = type === "reset"
+    ? "You requested a password reset for your RoastOrRecruit account."
+    : "Use this code to verify your email address for RoastOrRecruit.";
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background-color:#0A0A0A;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0A0A0A;padding:32px 16px">
+    <tr><td align="center">
+      <table width="480" cellpadding="0" cellspacing="0" style="max-width:480px">
+        <tr>
+          <td align="center" style="padding-bottom:8px">
+            <table cellpadding="0" cellspacing="0"><tr>
+              <td style="width:10px;height:28px;background:linear-gradient(180deg,#a855f7,#3b82f6);border-radius:4px 0 0 4px"></td>
+              <td style="padding:0 12px;font-size:20px;font-weight:800;color:#ffffff">RoastOrRecruit</td>
+            </tr></table>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#141414;border:1px solid #1f1f1f;border-radius:16px;padding:40px 32px">
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td align="center">
+                  <table cellpadding="0" cellspacing="0" style="width:56px;height:56px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:14px">
+                    <tr><td align="center" style="font-size:24px">🛡️</td></tr>
+                  </table>
+                </td>
+              </tr>
+              <tr><td height="20"></td></tr>
+              <tr><td align="center" style="font-size:22px;font-weight:700;color:#f3f4f6">${title}</td></tr>
+              <tr><td height="8"></td></tr>
+              <tr><td align="center" style="font-size:14px;color:#9ca3af;line-height:1.5">${subtitle}</td></tr>
+              <tr><td height="24"></td></tr>
+              <tr>
+                <td align="center">
+                  <table cellpadding="0" cellspacing="0" style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:16px 40px;display:inline-block">
+                    <tr><td align="center" style="font-size:36px;font-weight:bold;color:#fbbf24;letter-spacing:12px;font-family:monospace">${otp}</td></tr>
+                  </table>
+                </td>
+              </tr>
+              <tr><td height="24"></td></tr>
+              <tr><td align="center" style="font-size:13px;color:#6b7280">This code expires in <strong style="color:#9ca3af">10 minutes</strong></td></tr>
+              <tr><td height="8"></td></tr>
+              <tr><td align="center" style="font-size:13px;color:#6b7280">If you didn't request this, you can safely ignore this email.</td></tr>
+            </table>
+          </td>
+        </tr>
+        <tr><td height="24"></td></tr>
+        <tr>
+          <td align="center" style="font-size:12px;color:#525252;line-height:1.6">
+            Sent by <strong style="color:#737373">RoastOrRecruit Security Team</strong><br>
+            You received this because someone attempted to ${type === "reset" ? "reset the password for your RoastOrRecruit account" : "create a RoastOrRecruit account with this email address"}.<br>
+            If you have questions, contact <a href="mailto:support@roast-or-recruit.com" style="color:#6b7280;text-decoration:underline">support@roast-or-recruit.com</a>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`.trim();
+}
+
 async function sendEmailViaGmail(to, subject, html) {
   const gmail = getGmailClient();
   if (!gmail) return false;
   try {
     const utf8Bytes = Buffer.from(
-      `From: "RoastOrRecruit" <${process.env.GMAIL_USER}>\r\nTo: ${to}\r\nSubject: ${subject}\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n${html}`,
+      `From: "RoastOrRecruit Security Team" <${process.env.GMAIL_USER}>\r\n` +
+      `To: ${to}\r\n` +
+      `Subject: ${subject}\r\n` +
+      `MIME-Version: 1.0\r\n` +
+      `Content-Type: text/html; charset=utf-8\r\n` +
+      `X-Priority: 1\r\n` +
+      `X-Mailer: RoastOrRecruit\r\n` +
+      `List-Unsubscribe: <mailto:support@roast-or-recruit.com?subject=unsubscribe>\r\n` +
+      `Precedence: bulk\r\n\r\n` +
+      `${html}`,
       "utf-8"
     );
     await gmail.users.messages.send({
@@ -124,13 +198,10 @@ async function sendEmailViaGmail(to, subject, html) {
 }
 
 async function sendOtpEmail(email, otp, type = "signup") {
-  const subject = type === "reset" ? "Password Reset OTP — RoastOrRecruit" : "Your OTP for RoastOrRecruit";
-  const html = `<div style="background:#0A0A0A;padding:40px;font-family:sans-serif;text-align:center">
-    <h1 style="color:#a855f7">RoastOrRecruit</h1>
-    <p style="color:#9ca3af">${type === "reset" ? "Your password reset code is:" : "Your verification code is:"}</p>
-    <div style="font-size:36px;font-weight:bold;color:#f97316;letter-spacing:8px;margin:20px 0">${otp}</div>
-    <p style="color:#6b7280;font-size:12px">Valid for 10 minutes</p>
-  </div>`;
+  const subject = type === "reset"
+    ? "Reset your RoastOrRecruit password — OTP enclosed"
+    : "Verify your RoastOrRecruit email — OTP enclosed";
+  const html = buildOtpEmailHtml(otp, type);
 
   if (await sendEmailViaGmail(email, subject, html)) return true;
   if (await sendEmailViaResend(email, subject, html)) return true;
