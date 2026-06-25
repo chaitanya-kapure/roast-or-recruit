@@ -5,31 +5,34 @@ import { socialLinks, developerInfo } from "../config/socialLinks.js";
 import { useTheme } from "../context/ThemeContext.jsx";
 
 function SocialCard({ link }) {
+  const { isRoast } = useTheme();
+  const linkColor = isRoast ? "#FFFFFF" : "#111827";
+
   return (
     <a
       href={link.url}
       target="_blank"
       rel="noopener noreferrer"
-      className={`group flex items-center gap-4 p-4 rounded-xl backdrop-blur-xl ${link.bg} ${link.border} border ${link.hoverBg} transition-all duration-300 hover:scale-[1.02]`}
+      className="group flex items-center gap-4 p-4 rounded-xl backdrop-blur-xl border transition-all duration-300 hover:scale-[1.02]"
       style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
     >
-      <div className={`w-10 h-10 rounded-lg border flex items-center justify-center`} style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
+      <div className="w-10 h-10 rounded-lg border flex items-center justify-center" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}>
         {link.icon === "Github" ? (
-          <FaGithub className={`w-5 h-5 ${link.color}`} />
+          <FaGithub className="w-5 h-5" style={{ color: linkColor }} />
         ) : link.icon === "Linkedin" ? (
-          <FaLinkedin className={`w-5 h-5 ${link.color}`} />
+          <FaLinkedin className="w-5 h-5" style={{ color: linkColor }} />
         ) : link.icon === "X" ? (
-          <FaTwitter className={`w-5 h-5 ${link.color}`} />
+          <FaTwitter className="w-5 h-5" style={{ color: linkColor }} />
         ) : (
-          <span className={`text-lg ${link.color}`}>
+          <span className="text-lg" style={{ color: linkColor }}>
             {link.icon === "Code2" && "{ }"}
-            {link.icon === "ChefHat" && "👨‍🍳"}
+            {link.icon === "ChefHat" && "\uD83D\uDC68\u200D\uD83C\uDF73"}
             {link.icon === "Terminal" && ">_"}
           </span>
         )}
       </div>
-      <span className={`flex-1 text-sm font-medium ${link.color}`}>{link.name}</span>
-      <ExternalLink className="w-4 h-4 transition-colors" style={{ color: 'var(--text-muted)' }} />
+      <span className="flex-1 text-sm font-medium" style={{ color: linkColor }}>{link.name}</span>
+      <ExternalLink className="w-4 h-4" style={{ color: 'var(--text-muted)' }} />
     </a>
   );
 }
@@ -58,7 +61,7 @@ export default function Contact() {
                   onError={(e) => {
                     e.target.style.display = "none";
                     e.target.parentElement.classList.add("flex", "items-center", "justify-center", "bg-gradient-to-br", "from-orange-500/20", "to-blue-500/20");
-                    e.target.parentElement.innerHTML = `<span class="text-4xl text-gray-400">📸</span>`;
+                    e.target.parentElement.innerHTML = `<span class="text-4xl" style="color: var(--text-muted)">📸</span>`;
                   }}
                 />
               </div>
