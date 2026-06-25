@@ -30,7 +30,7 @@
     --input-border: rgba(255, 255, 255, 0.1);
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
     --gradient-hero: linear-gradient(135deg, rgba(239,68,68,0.15), rgba(249,115,22,0.08));
-    --gradient-brand: linear-gradient(135deg, #EF4444, #F97316);
+    --gradient-brand: linear-gradient(135deg, #EF4444, #EF4444);
     --gradient-accent: linear-gradient(135deg, #EF4444, #F97316, #EAB308);
     --scrollbar-bg: #0A0A0A;
     --scrollbar-thumb: #1F1F1F;
@@ -60,7 +60,7 @@
     --input-border: rgba(0, 0, 0, 0.12);
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
     --gradient-hero: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.06));
-    --gradient-brand: linear-gradient(135deg, #3B82F6, #2563EB);
+    --gradient-brand: linear-gradient(135deg, #3B82F6, #3B82F6);
     --gradient-accent: linear-gradient(135deg, #3B82F6, #3B82F6, #6366F1);
     --scrollbar-bg: #F3F4F6;
     --scrollbar-thumb: #D1D5DB;
@@ -112,7 +112,7 @@
   }
   .btn-roast {
     @apply px-8 py-3.5 rounded-xl font-semibold transition-all duration-300;
-    background: linear-gradient(135deg, #EF4444, #F97316);
+    background: #EF4444;
     color: white;
     box-shadow: 0 4px 20px rgba(239,68,68,0.3);
   }
@@ -122,7 +122,7 @@
   }
   .btn-recruit {
     @apply px-8 py-3.5 rounded-xl font-semibold transition-all duration-300;
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    background: #3B82F6;
     color: white;
     box-shadow: 0 4px 20px rgba(59,130,246,0.3);
   }
