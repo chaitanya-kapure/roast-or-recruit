@@ -48,10 +48,10 @@
     --text-secondary: #4B5563;
     --text-muted: #9CA3AF;
     --text-inverse: #FFFFFF;
-    --accent: #10B981;
-    --accent-secondary: #3B82F6;
+    --accent: #3B82F6;
+    --accent-secondary: #2563EB;
     --accent-tertiary: #6366F1;
-    --accent-glow: rgba(16, 185, 129, 0.2);
+    --accent-glow: rgba(59, 130, 246, 0.2);
     --border: rgba(0, 0, 0, 0.08);
     --border-hover: rgba(0, 0, 0, 0.15);
     --glass-bg: rgba(255, 255, 255, 0.8);
@@ -59,9 +59,9 @@
     --input-bg: #F9FAFB;
     --input-border: rgba(0, 0, 0, 0.12);
     --shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-    --gradient-hero: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(59,130,246,0.06));
-    --gradient-brand: linear-gradient(135deg, #10B981, #3B82F6);
-    --gradient-accent: linear-gradient(135deg, #10B981, #3B82F6, #6366F1);
+    --gradient-hero: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(99,102,241,0.06));
+    --gradient-brand: linear-gradient(135deg, #3B82F6, #2563EB);
+    --gradient-accent: linear-gradient(135deg, #3B82F6, #3B82F6, #6366F1);
     --scrollbar-bg: #F3F4F6;
     --scrollbar-thumb: #D1D5DB;
     --scrollbar-thumb-hover: #9CA3AF;
@@ -122,13 +122,13 @@
   }
   .btn-recruit {
     @apply px-8 py-3.5 rounded-xl font-semibold transition-all duration-300;
-    background: linear-gradient(135deg, #10B981, #3B82F6);
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
     color: white;
-    box-shadow: 0 4px 20px rgba(16,185,129,0.3);
+    box-shadow: 0 4px 20px rgba(59,130,246,0.3);
   }
   .btn-recruit:hover {
     transform: scale(1.03);
-    box-shadow: 0 6px 30px rgba(16,185,129,0.5);
+    box-shadow: 0 6px 30px rgba(59,130,246,0.5);
   }
   .btn-ghost {
     background-color: transparent;

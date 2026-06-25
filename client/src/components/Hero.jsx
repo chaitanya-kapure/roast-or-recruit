@@ -17,7 +17,8 @@ export default function Hero() {
       <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
         <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none">
           <span style={{ color: "#EF4444" }}>Roast</span>
-          <span style={{ color: "#3B82F6" }}>OrRecruit</span>
+          <span style={{ color: "var(--text-muted)" }}>Or</span>
+          <span style={{ color: "#3B82F6" }}>Recruit</span>
         </h1>
 
         <p className="text-xl md:text-2xl font-light mb-3" style={{ color: "var(--text-muted)" }}>
