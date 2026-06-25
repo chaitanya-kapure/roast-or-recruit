@@ -30,7 +30,7 @@ export default function Leaderboard() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="min-h-screen" data-theme={tab} style={{ backgroundColor: 'var(--bg-primary)' }}>
       <div className="max-w-4xl mx-auto px-4 py-16">
         <Link
           to="/"
