@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { google } from "googleapis";
 import dns from "dns";
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
@@ -9,6 +10,21 @@ import Otp from "../models/Otp.js";
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
+
+let gmailClient;
+function getGmailClient() {
+  if (gmailClient) return gmailClient;
+  if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
+    const oauth2 = new google.auth.OAuth2(
+      process.env.GMAIL_CLIENT_ID,
+      process.env.GMAIL_CLIENT_SECRET,
+      "urn:ietf:wg:oauth:2.0:oob"
+    );
+    oauth2.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
+    gmailClient = google.gmail({ version: "v1", auth: oauth2 });
+  }
+  return gmailClient || null;
+}
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -87,6 +103,26 @@ async function sendEmailViaSmtp(to, subject, html) {
   }
 }
 
+async function sendEmailViaGmail(to, subject, html) {
+  const gmail = getGmailClient();
+  if (!gmail) return false;
+  try {
+    const utf8Bytes = Buffer.from(
+      `From: "RoastOrRecruit" <${process.env.GMAIL_USER}>\r\nTo: ${to}\r\nSubject: ${subject}\r\nMIME-Version: 1.0\r\nContent-Type: text/html; charset=utf-8\r\n\r\n${html}`,
+      "utf-8"
+    );
+    await gmail.users.messages.send({
+      userId: "me",
+      requestBody: { raw: utf8Bytes.toString("base64url") },
+    });
+    console.log(`[Auth] Email sent via Gmail API to ${to}`);
+    return true;
+  } catch (err) {
+    console.log(`[Auth] Gmail API error: ${err.message}`);
+    return false;
+  }
+}
+
 async function sendOtpEmail(email, otp, type = "signup") {
   const subject = type === "reset" ? "Password Reset OTP — RoastOrRecruit" : "Your OTP for RoastOrRecruit";
   const html = `<div style="background:#0A0A0A;padding:40px;font-family:sans-serif;text-align:center">
@@ -96,6 +132,7 @@ async function sendOtpEmail(email, otp, type = "signup") {
     <p style="color:#6b7280;font-size:12px">Valid for 10 minutes</p>
   </div>`;
 
+  if (await sendEmailViaGmail(email, subject, html)) return true;
   if (await sendEmailViaResend(email, subject, html)) return true;
   if (await sendEmailViaSmtp(email, subject, html)) return true;
   console.error(`[Auth] Email delivery FAILED for ${email} (type: ${type})`);
