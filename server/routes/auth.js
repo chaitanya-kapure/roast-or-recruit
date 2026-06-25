@@ -2,6 +2,7 @@ import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import dns from "dns";
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
 
@@ -17,18 +18,23 @@ function createToken(user) {
   return jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-function createTransporter() {
+async function createTransporter() {
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
     const port = parseInt(process.env.SMTP_PORT) || 465;
+    const host = process.env.SMTP_HOST || "smtp.gmail.com";
+    let resolvedHost = host;
+    try {
+      const addresses = await dns.resolve4(host);
+      if (addresses.length > 0) resolvedHost = addresses[0];
+    } catch {}
     return nodemailer.createTransport({
-      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      host: resolvedHost,
       port,
       secure: port === 465,
       auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      tls: { rejectUnauthorized: false },
+      tls: { rejectUnauthorized: false, servername: host },
       connectionTimeout: 15000,
       socketTimeout: 15000,
-      family: 4,
     });
   }
   return null;
@@ -64,7 +70,7 @@ async function sendEmailViaResend(to, subject, html) {
 }
 
 async function sendEmailViaSmtp(to, subject, html) {
-  const transporter = createTransporter();
+  const transporter = await createTransporter();
   if (!transporter) return false;
   try {
     await transporter.sendMail({
