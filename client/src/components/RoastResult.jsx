@@ -27,7 +27,7 @@ export default function RoastResult({ data, onBack }) {
       </div>
 
       <div className="glass rounded-2xl p-8" style={{ borderColor: "var(--accent-glow)" }}>
-        <h2 className="text-xl font-bold mb-6" style={{ color: "var(--accent)" }}>🔥 Top Roasts</h2>
+        <h2 className="text-xl font-bold mb-6" style={{ color: "var(--accent)" }}>Top Roasts</h2>
         <div className="space-y-4">
           {roasts?.map((roast, i) => (
             <div

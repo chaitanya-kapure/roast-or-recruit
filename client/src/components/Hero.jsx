@@ -30,10 +30,10 @@ export default function Hero() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button onClick={() => handleMode("roast")} className="btn-roast text-base px-10">
-            🔥 Roast Me
+            Roast Me
           </button>
           <button onClick={() => handleMode("recruit")} className="btn-recruit text-base px-10">
-            👔 Recruit Me
+            Recruit Me
           </button>
         </div>
       </div>

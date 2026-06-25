@@ -17,12 +17,14 @@ export default function ModeCard({ type, title, icon, description, detail, onCli
         }}
       />
       <div className="relative">
-        <div
-          className="inline-flex items-center justify-center text-5xl mb-6 group-hover:scale-110 transition-transform duration-300 p-4 rounded-xl"
-          style={{ backgroundColor: "var(--accent-glow)" }}
-        >
-          {icon}
-        </div>
+        {icon && (
+          <div
+            className="inline-flex items-center justify-center text-5xl mb-6 group-hover:scale-110 transition-transform duration-300 p-4 rounded-xl"
+            style={{ backgroundColor: "var(--accent-glow)" }}
+          >
+            {icon}
+          </div>
+        )}
         <h2 className="text-2xl font-bold mb-3" style={{ color: "var(--accent)" }}>
           {title}
         </h2>
@@ -36,7 +38,7 @@ export default function ModeCard({ type, title, icon, description, detail, onCli
           onClick={(e) => { e.stopPropagation(); onClick(); }}
           className={btnClass}
         >
-          {isRoast ? "🔥 Try Roaster Mode" : "👔 Try Recruiter Mode"}
+          {isRoast ? "Try Roaster Mode" : "Try Recruiter Mode"}
         </button>
       </div>
     </div>

@@ -28,7 +28,7 @@ export default function Header({ onBack }) {
           className="text-xl font-bold transition-colors"
           style={{ color: "var(--text-primary)" }}
         >
-          {isRoast ? "\uD83D\uDD25 RoastOrRecruit" : "\uD83D\uDC54 RoastOrRecruit"}
+          RoastOrRecruit
         </Link>
 
         <div className="flex items-center gap-3">
@@ -70,7 +70,7 @@ export default function Header({ onBack }) {
                     color: "var(--text-secondary)",
                   }}
                 >
-                  {isRoast ? "\uD83D\uDD25 Roast" : "\uD83D\uDC54 Recruit"}
+                  {isRoast ? "Roast" : "Recruit"}
                 </button>
 
                 {user ? (
@@ -167,7 +167,7 @@ export default function Header({ onBack }) {
                 color: "var(--text-secondary)",
               }}
             >
-              {isRoast ? "\uD83D\uDD25 Roast Mode" : "\uD83D\uDC54 Recruit Mode"}
+               {isRoast ? "Roast Mode" : "Recruit Mode"}
             </button>
 
             <div

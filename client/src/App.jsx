@@ -120,7 +120,6 @@ function HomePage() {
                 <ModeCard
                   type="roast"
                   title="Roaster Mode"
-                  icon="🔥"
                   description="Get a brutally honest, humorous roast of your resume."
                   detail="Our AI analyzes your resume and delivers witty, playful roasts highlighting exaggerated claims, buzzword stuffing, and weak projects."
                   onClick={() => selectMode("roast")}
@@ -128,7 +127,6 @@ function HomePage() {
                 <ModeCard
                   type="recruit"
                   title="Recruiter Mode"
-                  icon="👔"
                   description="Professional ATS analysis with actionable improvements."
                   detail="Get a detailed evaluation with ATS score, strengths, weaknesses, missing elements, and tailored suggestions for every section."
                   onClick={() => selectMode("recruit")}

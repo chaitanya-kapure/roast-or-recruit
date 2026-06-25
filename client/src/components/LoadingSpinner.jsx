@@ -32,7 +32,7 @@ export default function LoadingSpinner({ mode, onCancel }) {
             style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }}
           />
           <div className="absolute inset-0 flex items-center justify-center text-3xl animate-pulse">
-            {isRoast ? "🔥" : "👔"}
+            {isRoast ? "⚡" : "📊"}
           </div>
         </div>
 

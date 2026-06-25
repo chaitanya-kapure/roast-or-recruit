@@ -43,7 +43,7 @@ export default function FileUpload({ mode, onAnalyze, loading }) {
   return (
     <div className="glass rounded-2xl p-6 sm:p-8">
       <div className="text-center mb-6">
-        <span className="text-4xl">{isRoast ? "🔥" : "👔"}</span>
+        <span className="text-4xl">{isRoast ? "📄" : "📄"}</span>
         <h2 className="text-2xl font-bold mt-3" style={{ color: "var(--accent)" }}>
           {isRoast ? "Upload Your Resume to Get Roasted" : "Upload Your Resume for ATS Analysis"}
         </h2>

@@ -28,7 +28,7 @@ export default function About() {
         <div className="grid md:grid-cols-2 gap-6 mb-16">
           <div className="glass-card rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--accent-glow)' }}>
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl">🔥</span>
+              <span className="text-3xl">💬</span>
               <h2 className="text-xl font-bold" style={{ color: 'var(--accent)' }}>Roaster Mode</h2>
             </div>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
@@ -38,7 +38,7 @@ export default function About() {
 
           <div className="glass-card rounded-2xl p-6" style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--accent-glow)' }}>
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-3xl">👔</span>
+              <span className="text-3xl">📋</span>
               <h2 className="text-xl font-bold" style={{ color: 'var(--accent-secondary)' }}>Recruiter Mode</h2>
             </div>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
