@@ -1,23 +1,37 @@
 export default function ModeCard({ type, title, icon, description, detail, onClick }) {
   const isRoast = type === "roast";
   const btnClass = isRoast ? "btn-roast" : "btn-recruit";
-  const accent = isRoast ? "text-orange-400" : "text-blue-400";
 
   return (
     <div
-      className="group relative glass-card rounded-2xl p-8 hover:border-white/[0.15] hover:-translate-y-1 transition-all duration-500 cursor-pointer"
+      className="group relative glass-card rounded-2xl p-8 hover:-translate-y-1 transition-all duration-500 cursor-pointer"
+      style={{ borderColor: "var(--glass-border)" }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "var(--accent)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "var(--glass-border)"; }}
       onClick={onClick}
     >
-      <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${isRoast ? "from-orange-500/[0.03] to-transparent" : "from-blue-500/[0.03] to-transparent"} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+      <div
+        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{
+          background: "linear-gradient(135deg, var(--accent-glow), transparent)",
+        }}
+      />
       <div className="relative">
-        <div className="text-5xl mb-6 group-hover:scale-110 transition-transform duration-300">
+        <div
+          className="inline-flex items-center justify-center text-5xl mb-6 group-hover:scale-110 transition-transform duration-300 p-4 rounded-xl"
+          style={{ backgroundColor: "var(--accent-glow)" }}
+        >
           {icon}
         </div>
-        <h2 className={`text-2xl font-bold mb-3 ${accent}`}>
+        <h2 className="text-2xl font-bold mb-3" style={{ color: "var(--accent)" }}>
           {title}
         </h2>
-        <p className="text-gray-300 mb-3 leading-relaxed">{description}</p>
-        <p className="text-gray-500 text-sm leading-relaxed mb-6">{detail}</p>
+        <p className="mb-3 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+          {description}
+        </p>
+        <p className="text-sm leading-relaxed mb-6" style={{ color: "var(--text-muted)" }}>
+          {detail}
+        </p>
         <button
           onClick={(e) => { e.stopPropagation(); onClick(); }}
           className={btnClass}

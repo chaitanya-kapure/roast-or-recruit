@@ -22,30 +22,36 @@ export default function LoadingSpinner({ mode, onCancel }) {
   ];
 
   const messages = isRoast ? roasts : recruits;
-  const color = isRoast ? "text-red-400" : "text-blue-400";
-  const borderColor = isRoast ? "border-red-500" : "border-blue-500";
 
   return (
     <div className="max-w-md mx-auto px-4 py-24 text-center">
       <div className="glass rounded-2xl p-12 space-y-6">
-        <div className={`relative mx-auto w-20 h-20`}>
-          <div className={`absolute inset-0 rounded-full border-4 ${borderColor}/30`} />
-          <div className={`absolute inset-0 rounded-full border-4 border-t-transparent ${borderColor} animate-spin`} />
+        <div className="relative mx-auto w-20 h-20">
+          <div
+            className="absolute inset-0 rounded-full border-4 animate-spin"
+            style={{ borderColor: "var(--accent)", borderTopColor: "transparent" }}
+          />
           <div className="absolute inset-0 flex items-center justify-center text-3xl animate-pulse">
             {isRoast ? "🔥" : "👔"}
           </div>
         </div>
 
         <div className="space-y-2">
-          <h3 className={`text-xl font-bold ${color}`}>
+          <h3 className="text-xl font-bold" style={{ color: "var(--accent)" }}>
             {isRoast ? "Preparing the Roast..." : "Analyzing Your Resume..."}
           </h3>
-          <p className="text-gray-400 text-sm animate-pulse" id="loading-message">
+          <p className="text-sm animate-pulse" style={{ color: "var(--text-muted)" }} id="loading-message">
             {messages[0]}
           </p>
-          <p className="text-gray-600 text-xs">This usually takes a few seconds</p>
+          <p className="text-xs" style={{ color: "var(--text-muted)" }}>This usually takes a few seconds</p>
           {onCancel && (
-            <button onClick={onCancel} className="mt-4 text-sm text-gray-500 hover:text-gray-300 underline transition-colors">
+            <button
+              onClick={onCancel}
+              className="mt-4 text-sm underline transition-colors"
+              style={{ color: "var(--text-muted)" }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
+            >
               Cancel
             </button>
           )}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowLeft, Flame, Briefcase, Trophy, Medal, Skull } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useTheme } from "../context/ThemeContext.jsx";
 
 export default function Leaderboard() {
   const [tab, setTab] = useState("roast");
@@ -22,52 +23,51 @@ export default function Leaderboard() {
   const items = tab === "roast" ? data.roast : data.recruit;
 
   const getBadge = (index) => {
-    if (index === 0) return { icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-500/20" };
-    if (index === 1) return { icon: Medal, color: "text-gray-300", bg: "bg-gray-400/20" };
-    if (index === 2) return { icon: Medal, color: "text-orange-400", bg: "bg-orange-500/20" };
+    if (index === 0) return { icon: Trophy, color: "var(--accent-tertiary)", bg: "var(--accent-glow)" };
+    if (index === 1) return { icon: Medal, color: "var(--text-secondary)", bg: "var(--bg-card-hover)" };
+    if (index === 2) return { icon: Medal, color: "var(--accent)", bg: "var(--accent-glow)" };
     return { icon: null, color: "", bg: "" };
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-primary)' }}>
       <div className="max-w-4xl mx-auto px-4 py-16">
         <Link
           to="/"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-sm text-gray-300 hover:text-white mb-10"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-xl hover:bg-white/10 hover:border-white/20 transition-all text-sm hover:text-white mb-10"
+          style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
         </Link>
 
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-6">
-            <Trophy className="w-8 h-8 text-purple-400" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style={{ backgroundColor: 'var(--accent-glow)', border: '1px solid var(--accent-glow)' }}>
+            <Trophy className="w-8 h-8" style={{ color: 'var(--accent-secondary)' }} />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-purple-400 to-blue-400">
+          <h1 className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent" style={{ backgroundImage: 'var(--gradient-accent)' }}>
             Leaderboard
           </h1>
-          <p className="text-gray-500 text-sm">The most brutally roasted and top-scoring resumes.</p>
+          <p style={{ color: 'var(--text-muted)' }} className="text-sm">The most brutally roasted and top-scoring resumes.</p>
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-8">
           <button
             onClick={() => setTab("roast")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all ${
-              tab === "roast"
-                ? "bg-orange-500/20 text-orange-400 border border-orange-500/30"
-                : "bg-white/5 text-gray-500 border border-white/10 hover:text-gray-300"
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all border ${
+              tab === "roast" ? "" : ""
             }`}
+            style={tab === "roast" ? { backgroundColor: 'var(--accent-glow)', color: 'var(--accent)', borderColor: 'var(--accent-glow)' } : { backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', borderColor: 'var(--border)' }}
           >
             <Flame className="w-4 h-4" />
             Roasts
           </button>
           <button
             onClick={() => setTab("recruit")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all ${
-              tab === "recruit"
-                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                : "bg-white/5 text-gray-500 border border-white/10 hover:text-gray-300"
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-medium transition-all border ${
+              tab === "recruit" ? "" : ""
             }`}
+            style={tab === "recruit" ? { backgroundColor: 'var(--accent-glow)', color: 'var(--accent-secondary)', borderColor: 'var(--accent-glow)' } : { backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', borderColor: 'var(--border)' }}
           >
             <Briefcase className="w-4 h-4" />
             Recruits
@@ -75,9 +75,9 @@ export default function Leaderboard() {
         </div>
 
         {loading ? (
-          <div className="text-center text-gray-500 py-12">Loading...</div>
+          <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>Loading...</div>
         ) : items.length === 0 ? (
-          <div className="text-center text-gray-500 py-12">No entries yet. Be the first!</div>
+          <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>No entries yet. Be the first!</div>
         ) : (
           <div className="space-y-3">
             {items.map((entry, i) => {
@@ -86,38 +86,37 @@ export default function Leaderboard() {
               return (
                 <div
                   key={entry._id || entry.id}
-                  className={`glass-card rounded-2xl p-5 flex items-center gap-5 transition-all duration-300 hover:border-white/[0.15] ${
-                    i < 3 ? "border-white/[0.1]" : ""
-                  }`}
+                  className={`glass-card rounded-2xl p-5 flex items-center gap-5 transition-all duration-300${i < 3 ? "" : ""}`}
+                  style={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border)' }}
                 >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${badge.bg}`}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: badge.bg }}>
                     {BadgeIcon ? (
-                      <BadgeIcon className={`w-5 h-5 ${badge.color}`} />
+                      <BadgeIcon className="w-5 h-5" style={{ color: badge.color }} />
                     ) : (
-                      <span className="text-sm text-gray-500 font-bold">{i + 1}</span>
+                      <span className="text-sm font-bold" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
                     )}
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-sm font-medium text-gray-200 truncate">
+                      <span className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>
                         {entry.userEmail || entry.file_name || "Anonymous"}
                       </span>
                       {tab === "roast" && (
-                        <Skull className="w-3.5 h-3.5 text-orange-400/60 shrink-0" />
+                        <Skull className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--accent)' }} />
                       )}
                     </div>
                     {entry.verdict && (
-                      <p className="text-xs text-gray-500 truncate">{entry.verdict}</p>
+                      <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{entry.verdict}</p>
                     )}
                   </div>
 
                   <div className="text-right shrink-0">
-                    <div className={`text-2xl font-black ${tab === "roast" ? "text-orange-400" : "text-blue-400"}`}>
+                    <div className="text-2xl font-black" style={{ color: tab === "roast" ? 'var(--accent)' : 'var(--accent-secondary)' }}>
                       {entry.score}
-                      <span className="text-xs text-gray-600 font-normal">/100</span>
+                      <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>/100</span>
                     </div>
-                    <div className="text-[10px] text-gray-600">
+                    <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
                       {new Date(entry.createdAt || entry.created_at).toLocaleDateString()}
                     </div>
                   </div>

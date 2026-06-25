@@ -2,26 +2,35 @@ import ScoreBar from "./ScoreBar.jsx";
 
 const ratingEmojis = { Good: "✅", Average: "⚠️", Poor: "❌" };
 
+const semanticColors = {
+  green: { bg: "rgba(16,185,129,0.1)", text: "#10B981", border: "rgba(16,185,129,0.3)" },
+  yellow: { bg: "rgba(234,179,8,0.1)", text: "#EAB308", border: "rgba(234,179,8,0.3)" },
+  red: { bg: "rgba(239,68,68,0.1)", text: "#EF4444", border: "rgba(239,68,68,0.3)" },
+  blue: { bg: "rgba(59,130,246,0.1)", text: "#3B82F6", border: "rgba(59,130,246,0.3)" },
+};
+
 function Badge({ text, color }) {
-  const colors = {
-    green: "bg-green-500/10 text-green-400 border-green-500/30",
-    yellow: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
-    red: "bg-red-500/10 text-red-400 border-red-500/30",
-    blue: "bg-blue-500/10 text-blue-400 border-blue-500/30",
-  };
+  const c = semanticColors[color] || semanticColors.blue;
   const recEmojis = { green: "✅", yellow: "👀", red: "📈" };
   return (
-    <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border ${colors[color] || colors.blue}`}>
+    <span
+      className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border"
+      style={{
+        backgroundColor: c.bg,
+        color: c.text,
+        borderColor: c.border,
+      }}
+    >
       {recEmojis[color] || ""} {text}
     </span>
   );
 }
 
 function Section({ title, children, color = "blue" }) {
-  const borderKey = color === "green" ? "emerald" : color;
+  const c = semanticColors[color] || semanticColors.blue;
   return (
-    <div className={`glass rounded-2xl p-8 border border-${borderKey}-500/20`}>
-      <h2 className={`text-xl font-bold text-${color === "green" ? "emerald" : color}-400 mb-4`}>
+    <div className="glass rounded-2xl p-8" style={{ borderColor: c.border }}>
+      <h2 className="text-xl font-bold mb-4" style={{ color: c.text }}>
         {title}
       </h2>
       {children}
@@ -44,20 +53,20 @@ export default function RecruitResult({ data, onBack }) {
 
   return (
     <div className="space-y-8">
-      <div className="glass rounded-2xl p-8 border border-blue-500/20 text-center">
+      <div className="glass rounded-2xl p-8 text-center" style={{ borderColor: "rgba(59,130,246,0.2)" }}>
         <span className="text-6xl">{scoreEmoji}</span>
-        <h1 className="text-3xl font-bold text-blue-400 mt-4">ATS Analysis Results</h1>
+        <h1 className="text-3xl font-bold mt-4" style={{ color: "var(--accent-secondary)" }}>ATS Analysis Results</h1>
         <div className="mt-4">
           <Badge text={recommendation} color={recColor} />
         </div>
       </div>
 
       <Section title="📊 ATS Score" color="blue">
-        <ScoreBar label="ATS Compatibility" value={atsScore} color="blue" suffix="/100" />
+        <ScoreBar label="ATS Compatibility" value={atsScore} suffix="/100" />
       </Section>
 
       <Section title="📋 Resume Summary" color="blue">
-        <p className="text-gray-300 leading-relaxed">{summary}</p>
+        <p className="leading-relaxed" style={{ color: "var(--text-secondary)" }}>{summary}</p>
       </Section>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -65,8 +74,8 @@ export default function RecruitResult({ data, onBack }) {
           <ul className="space-y-3">
             {strengths?.map((s, i) => (
               <li key={i} className="flex gap-3">
-                <span className="text-emerald-400 shrink-0">💪</span>
-                <span className="text-gray-300">{s}</span>
+                <span className="shrink-0" style={{ color: "var(--accent)" }}>💪</span>
+                <span style={{ color: "var(--text-secondary)" }}>{s}</span>
               </li>
             ))}
           </ul>
@@ -76,8 +85,8 @@ export default function RecruitResult({ data, onBack }) {
           <ul className="space-y-3">
             {weaknesses?.map((w, i) => (
               <li key={i} className="flex gap-3">
-                <span className="text-red-400 shrink-0">🚩</span>
-                <span className="text-gray-300">{w}</span>
+                <span className="shrink-0" style={{ color: "#EF4444" }}>🚩</span>
+                <span style={{ color: "var(--text-secondary)" }}>{w}</span>
               </li>
             ))}
           </ul>
@@ -88,8 +97,8 @@ export default function RecruitResult({ data, onBack }) {
         <ul className="space-y-3">
           {missingElements?.map((m, i) => (
             <li key={i} className="flex gap-3">
-              <span className="text-yellow-400 shrink-0">❗</span>
-              <span className="text-gray-300">{m}</span>
+              <span className="shrink-0" style={{ color: "#EAB308" }}>❗</span>
+              <span style={{ color: "var(--text-secondary)" }}>{m}</span>
             </li>
           ))}
         </ul>
@@ -100,26 +109,26 @@ export default function RecruitResult({ data, onBack }) {
           <div className="grid md:grid-cols-2 gap-6">
             {improvements.skills && (
               <div className="space-y-2">
-                <h3 className="font-semibold text-blue-300">🛠️ Skills</h3>
-                <p className="text-gray-400 text-sm">{improvements.skills}</p>
+                <h3 className="font-semibold" style={{ color: "var(--accent-secondary)" }}>🛠️ Skills</h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{improvements.skills}</p>
               </div>
             )}
             {improvements.projects && (
               <div className="space-y-2">
-                <h3 className="font-semibold text-blue-300">🚀 Projects</h3>
-                <p className="text-gray-400 text-sm">{improvements.projects}</p>
+                <h3 className="font-semibold" style={{ color: "var(--accent-secondary)" }}>🚀 Projects</h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{improvements.projects}</p>
               </div>
             )}
             {improvements.experience && (
               <div className="space-y-2">
-                <h3 className="font-semibold text-blue-300">💼 Experience</h3>
-                <p className="text-gray-400 text-sm">{improvements.experience}</p>
+                <h3 className="font-semibold" style={{ color: "var(--accent-secondary)" }}>💼 Experience</h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{improvements.experience}</p>
               </div>
             )}
             {improvements.education && (
               <div className="space-y-2">
-                <h3 className="font-semibold text-blue-300">🎓 Education</h3>
-                <p className="text-gray-400 text-sm">{improvements.education}</p>
+                <h3 className="font-semibold" style={{ color: "var(--accent-secondary)" }}>🎓 Education</h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{improvements.education}</p>
               </div>
             )}
           </div>
@@ -130,9 +139,16 @@ export default function RecruitResult({ data, onBack }) {
         <Section title="📁 Project Feedback" color="blue">
           <div className="space-y-6">
             {projectFeedback.map((p, i) => (
-              <div key={i} className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
+              <div
+                key={i}
+                className="p-4 rounded-xl border"
+                style={{
+                  backgroundColor: "var(--accent-glow)",
+                  borderColor: "var(--accent-glow)",
+                }}
+              >
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-200">
+                  <h3 className="font-semibold" style={{ color: "var(--text-primary)" }}>
                     {projectEmojis[i % projectEmojis.length]} {p.name}
                   </h3>
                   <Badge
@@ -140,7 +156,7 @@ export default function RecruitResult({ data, onBack }) {
                     color={p.rating === "Good" ? "green" : p.rating === "Average" ? "yellow" : "red"}
                   />
                 </div>
-                <p className="text-gray-400 text-sm">{p.feedback}</p>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{p.feedback}</p>
               </div>
             ))}
           </div>

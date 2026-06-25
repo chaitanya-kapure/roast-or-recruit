@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext.jsx";
+import { useTheme } from "./context/ThemeContext.jsx";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
@@ -22,9 +23,10 @@ import Profile from "./pages/Profile.jsx";
 
 function HomePage() {
   const { token } = useAuth();
+  const { setMode, isRoast } = useTheme();
   const navigate = useNavigate();
   const [step, setStep] = useState("landing");
-  const [mode, setMode] = useState(null);
+  const [appMode, setAppMode] = useState(null);
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -34,6 +36,7 @@ function HomePage() {
   const selectMode = (selectedMode) => {
     if (!token) { navigate("/login"); return; }
     setMode(selectedMode);
+    setAppMode(selectedMode);
     setStep("upload");
     setFile(null);
     setResult(null);
@@ -42,7 +45,7 @@ function HomePage() {
 
   const handleBack = () => {
     setStep("landing");
-    setMode(null);
+    setAppMode(null);
     setFile(null);
     setResult(null);
     setError(null);
@@ -67,7 +70,7 @@ function HomePage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-      const endpoint = mode === "roast" ? "/api/roast" : "/api/recruit";
+      const endpoint = appMode === "roast" ? "/api/roast" : "/api/recruit";
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(endpoint, { method: "POST", headers, body: formData, signal: controller.signal });
       clearTimeout(timeoutId);
@@ -102,16 +105,16 @@ function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] relative overflow-hidden">
+    <div style={{ backgroundColor: "var(--bg-primary)", minHeight: "100vh", position: "relative", overflow: "hidden" }}>
       <Header onBack={step !== "landing" ? handleBack : null} />
       <main className="relative z-10">
         {step === "landing" && (
           <>
-            <Hero onSelectMode={selectMode} />
+            <Hero />
             <div className="relative z-10 max-w-6xl mx-auto px-4 pb-24 -mt-8">
               <div className="text-center mb-12">
-                <h2 className="text-2xl md:text-3xl font-bold text-gray-200 mb-3">Choose Mode For You</h2>
-                <p className="text-gray-500">One resume. Two completely different perspectives.</p>
+                <h2 className="text-2xl md:text-3xl font-bold mb-3" style={{ color: "var(--text-primary)" }}>Choose Your Experience</h2>
+                <p style={{ color: "var(--text-muted)" }}>One resume. Two completely different perspectives.</p>
               </div>
               <div className="grid md:grid-cols-2 gap-8">
                 <ModeCard
@@ -138,23 +141,23 @@ function HomePage() {
         {step === "upload" && (
           <div className="max-w-2xl mx-auto px-4 py-12">
             <FileUpload
-              mode={mode}
+              mode={appMode}
               onAnalyze={handleAnalyze}
               loading={loading}
             />
             {error && (
-              <div className="mt-4 p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400">
+              <div className="mt-4 p-4 rounded-xl" style={{ backgroundColor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#EF4444" }}>
                 {error}
               </div>
             )}
           </div>
         )}
 
-        {step === "loading" && <LoadingSpinner mode={mode} onCancel={handleCancel} />}
+        {step === "loading" && <LoadingSpinner mode={appMode} onCancel={handleCancel} />}
 
         {step === "result" && result && (
           <div className="max-w-4xl mx-auto px-4 py-12">
-            {mode === "roast" ? (
+            {appMode === "roast" ? (
               <RoastResult data={result} onBack={handleBack} />
             ) : (
               <RecruitResult data={result} onBack={handleBack} />

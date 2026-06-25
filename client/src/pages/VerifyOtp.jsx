@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { useAuth } from "../context/AuthContext.jsx";
+import { useTheme } from "../context/ThemeContext.jsx";
 
 export default function VerifyOtp() {
   const [searchParams] = useSearchParams();
@@ -82,28 +83,28 @@ export default function VerifyOtp() {
 
   if (!email) {
     return (
-      <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">No email provided.</p>
-          <Link to="/signup" className="text-purple-400 hover:text-purple-300">Sign up</Link>
+          <p className="text-[var(--text-muted)] mb-4">No email provided.</p>
+          <Link to="/signup" className="text-[var(--accent-secondary)] hover:text-purple-300">Sign up</Link>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center px-4 py-8">
+    <div className="min-h-screen bg-[var(--bg-primary)] flex items-center justify-center px-4 py-8">
       <div className="w-full max-w-md">
-        <Link to="/" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-300 mb-8 transition-colors">
+        <Link to="/" className="inline-flex items-center gap-2 text-sm text-[var(--text-muted)] hover:text-gray-300 mb-8 transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
         <div className="glass-card rounded-2xl p-6 sm:p-8 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-5">
-            <ShieldCheck className="w-7 h-7 text-purple-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--accent-glow)] border border-[var(--accent-glow)] mb-5">
+            <ShieldCheck className="w-7 h-7 text-[var(--accent-secondary)]" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-100 mb-2">Verify Your Email</h1>
-          <p className="text-gray-500 text-sm mb-2">Enter the 6-digit code sent to</p>
-          <p className="text-purple-400 text-sm font-medium mb-6">{email}</p>
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] mb-2">Verify Your Email</h1>
+          <p className="text-[var(--text-muted)] text-sm mb-2">Enter the 6-digit code sent to</p>
+          <p className="text-[var(--accent-secondary)] text-sm font-medium mb-6">{email}</p>
           <form onSubmit={handleSubmit}>
             <div className="flex items-center justify-center gap-2 mb-6">
               {otp.map((d, i) => (
@@ -116,15 +117,16 @@ export default function VerifyOtp() {
                   value={d}
                   onChange={(e) => handleChange(i, e.target.value)}
                   onKeyDown={(e) => handleKeyDown(i, e)}
-                  className="w-11 h-13 sm:w-12 sm:h-14 text-center bg-white/5 border border-white/10 rounded-xl text-xl font-bold text-gray-200 focus:outline-none focus:border-purple-500/40 transition-colors"
+                  className="w-11 h-13 sm:w-12 sm:h-14 text-center rounded-xl text-xl font-bold transition-colors input-theme"
                 />
               ))}
             </div>
-            {error && <p className="text-red-400 text-xs mb-4">{error}</p>}
+            {error && <p className="text-[var(--accent)] text-xs mb-4">{error}</p>}
             <button
               type="submit"
               disabled={loading || otp.join("").length !== 6}
-              className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 transition-all disabled:opacity-50 text-sm"
+              className="w-full py-3 rounded-xl font-semibold text-white transition-all disabled:opacity-50 text-sm"
+              style={{ background: "var(--gradient-brand)" }}
             >
               {loading ? "Verifying..." : "Verify OTP"}
             </button>
@@ -133,7 +135,7 @@ export default function VerifyOtp() {
             <button
               onClick={handleResend}
               disabled={cooldown > 0 || resending}
-              className="text-xs text-gray-500 hover:text-gray-300 disabled:text-gray-700 disabled:cursor-not-allowed transition-colors"
+              className="text-xs text-[var(--text-muted)] hover:text-gray-300 disabled:text-gray-700 disabled:cursor-not-allowed transition-colors"
             >
               {resending ? "Sending..." : cooldown > 0 ? `Resend in ${cooldown}s` : "Resend OTP"}
             </button>

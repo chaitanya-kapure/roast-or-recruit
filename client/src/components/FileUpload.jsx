@@ -3,10 +3,10 @@ import { useState, useRef } from "react";
 export default function FileUpload({ mode, onAnalyze, loading }) {
   const [file, setFile] = useState(null);
   const [dragOver, setDragOver] = useState(false);
+  const [hoverDrop, setHoverDrop] = useState(false);
   const inputRef = useRef(null);
 
   const isRoast = mode === "roast";
-  const accent = isRoast ? "red" : "blue";
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -32,14 +32,22 @@ export default function FileUpload({ mode, onAnalyze, loading }) {
     return (bytes / 1024 / 1024).toFixed(1) + " MB";
   };
 
+  const dropBorderColor = dragOver
+    ? "var(--accent)"
+    : file
+    ? "var(--accent)"
+    : hoverDrop
+    ? "var(--border-hover)"
+    : "var(--border)";
+
   return (
     <div className="glass rounded-2xl p-6 sm:p-8">
       <div className="text-center mb-6">
         <span className="text-4xl">{isRoast ? "🔥" : "👔"}</span>
-        <h2 className={`text-2xl font-bold mt-3 ${isRoast ? "text-red-400" : "text-blue-400"}`}>
+        <h2 className="text-2xl font-bold mt-3" style={{ color: "var(--accent)" }}>
           {isRoast ? "Upload Your Resume to Get Roasted" : "Upload Your Resume for ATS Analysis"}
         </h2>
-        <p className="text-gray-400 mt-2">PDF or TXT files (max 5MB)</p>
+        <p className="mt-2" style={{ color: "var(--text-muted)" }}>PDF or TXT files (max 5MB)</p>
       </div>
 
       <div
@@ -47,29 +55,25 @@ export default function FileUpload({ mode, onAnalyze, loading }) {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300 ${
-          dragOver
-            ? `border-${accent}-400 bg-${accent}-500/5`
-            : file
-            ? `border-${accent}-500/50 bg-${accent}-500/5`
-            : "border-gray-700 hover:border-gray-500"
-        }`}
+        onMouseEnter={() => setHoverDrop(true)}
+        onMouseLeave={() => setHoverDrop(false)}
+        className="border-2 border-dashed rounded-2xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300"
         style={{
-          borderColor: dragOver
-            ? (isRoast ? "#f87171" : "#60a5fa")
-            : file
-            ? (isRoast ? "#ef4444" : "#3b82f6")
-            : undefined,
+          borderColor: dropBorderColor,
+          backgroundColor: (dragOver || file) ? "var(--accent-glow)" : "transparent",
         }}
       >
         {file ? (
           <div className="space-y-3">
-            <div className="text-5xl">{isRoast ? "📄" : "📄"}</div>
-            <p className="text-lg font-medium text-gray-200">{file.name}</p>
-            <p className="text-sm text-gray-500">{formatSize(file.size)}</p>
+            <div className="text-5xl">📄</div>
+            <p className="text-lg font-medium" style={{ color: "var(--text-primary)" }}>{file.name}</p>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>{formatSize(file.size)}</p>
             <button
               onClick={(e) => { e.stopPropagation(); setFile(null); }}
-              className="text-sm text-gray-500 hover:text-gray-300 underline"
+              className="text-sm underline transition-colors"
+              style={{ color: "var(--text-muted)" }}
+              onMouseEnter={(e) => e.currentTarget.style.color = "var(--text-secondary)"}
+              onMouseLeave={(e) => e.currentTarget.style.color = "var(--text-muted)"}
             >
               Remove
             </button>
@@ -77,10 +81,10 @@ export default function FileUpload({ mode, onAnalyze, loading }) {
         ) : (
           <div className="space-y-3">
             <div className="text-5xl">📄</div>
-            <p className="text-gray-300">
-              <span className={`text-${accent}-400 font-medium`}>Click to upload</span> or drag and drop
+            <p style={{ color: "var(--text-secondary)" }}>
+              <span style={{ color: "var(--accent)", fontWeight: 500 }}>Click to upload</span> or drag and drop
             </p>
-            <p className="text-gray-500 text-sm">PDF or TXT files only</p>
+            <p className="text-sm" style={{ color: "var(--text-muted)" }}>PDF or TXT files only</p>
           </div>
         )}
         <input
@@ -95,11 +99,11 @@ export default function FileUpload({ mode, onAnalyze, loading }) {
       <button
         onClick={handleSubmit}
         disabled={!file || loading}
-        className={`w-full mt-6 px-8 py-3 rounded-xl font-semibold text-white transition-all duration-300 ${
-          isRoast
-            ? "bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-lg shadow-red-500/25"
-            : "bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 shadow-lg shadow-blue-500/25"
-        } disabled:opacity-40 disabled:cursor-not-allowed`}
+        className="w-full mt-6 px-8 py-3 rounded-xl font-semibold text-white transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+        style={{
+          background: "var(--gradient-brand)",
+          boxShadow: "0 10px 15px -3px var(--accent-glow)",
+        }}
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">
