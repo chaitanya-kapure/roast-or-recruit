@@ -61,7 +61,7 @@ export default function Hero({ onSelectMode }) {
       {roastComments.map((c, i) => (
         <div
           key={"roast-" + i}
-          className="absolute pointer-events-none animate-bounce-soft"
+          className="hidden md:block absolute pointer-events-none animate-bounce-soft"
           style={{ left: c.x, top: c.y, animationDelay: c.delay }}
         >
           <div className="glass-card rounded-xl px-3 py-1.5 text-xs text-orange-300/70 border-orange-500/10 whitespace-nowrap">
@@ -73,7 +73,7 @@ export default function Hero({ onSelectMode }) {
       {recruitComments.map((c, i) => (
         <div
           key={"recruit-" + i}
-          className="absolute pointer-events-none animate-bounce-soft"
+          className="hidden md:block absolute pointer-events-none animate-bounce-soft"
           style={{ left: c.x, top: c.y, animationDelay: c.delay }}
         >
           <div className="glass-card rounded-xl px-3 py-1.5 text-xs text-blue-300/70 border-blue-500/10 whitespace-nowrap">
@@ -88,7 +88,7 @@ export default function Hero({ onSelectMode }) {
           
         </div> */}
 
-        <h1 className="text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none">
+        <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-black mb-6 tracking-tight leading-none">
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-red-400 via-purple-400 to-blue-400">
             RoastOrRecruit
           </span>

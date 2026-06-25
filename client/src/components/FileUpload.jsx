@@ -33,7 +33,7 @@ export default function FileUpload({ mode, onAnalyze, loading }) {
   };
 
   return (
-    <div className="glass rounded-2xl p-8">
+    <div className="glass rounded-2xl p-6 sm:p-8">
       <div className="text-center mb-6">
         <span className="text-4xl">{isRoast ? "🔥" : "👔"}</span>
         <h2 className={`text-2xl font-bold mt-3 ${isRoast ? "text-red-400" : "text-blue-400"}`}>
@@ -47,7 +47,7 @@ export default function FileUpload({ mode, onAnalyze, loading }) {
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all duration-300 ${
+        className={`border-2 border-dashed rounded-2xl p-6 sm:p-12 text-center cursor-pointer transition-all duration-300 ${
           dragOver
             ? `border-${accent}-400 bg-${accent}-500/5`
             : file
