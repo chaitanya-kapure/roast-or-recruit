@@ -89,8 +89,8 @@ async function sendOtpEmail(email, otp, type = "signup") {
     <p style="color:#6b7280;font-size:12px">Valid for 10 minutes</p>
   </div>`;
 
-  if (await sendEmailViaResend(to, subject, html)) return true;
-  if (await sendEmailViaSmtp(to, subject, html)) return true;
+  if (await sendEmailViaResend(email, subject, html)) return true;
+  if (await sendEmailViaSmtp(email, subject, html)) return true;
   console.error(`[Auth] Email delivery FAILED for ${email} (type: ${type})`);
   return false;
 }
