@@ -20,7 +20,7 @@ function createToken(user) {
 
 async function createTransporter() {
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-    const port = parseInt(process.env.SMTP_PORT) || 465;
+    const port = parseInt(process.env.SMTP_PORT) || 587;
     const host = process.env.SMTP_HOST || "smtp.gmail.com";
     let resolvedHost = host;
     try {
