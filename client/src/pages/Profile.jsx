@@ -12,14 +12,14 @@ export default function Profile() {
   const [showNew, setShowNew] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [changing, setChanging] = useState(false);
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
     if (newPassword.length < 6) { setError("New password must be at least 6 characters"); return; }
-    setLoading(true);
+      setChanging(true);
     try {
       const res = await fetch("/api/auth/change-password", {
         method: "POST",
@@ -34,7 +34,7 @@ export default function Profile() {
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      setChanging(false);
     }
   };
 
@@ -132,10 +132,10 @@ export default function Profile() {
             {success && <p className="text-green-400 text-xs">{success}</p>}
             <button
               type="submit"
-              disabled={loading}
+              disabled={changing}
               className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 transition-all disabled:opacity-50 text-sm"
             >
-              {loading ? "Changing..." : "Change Password"}
+              {changing ? "Changing..." : "Change Password"}
             </button>
           </form>
         </div>
