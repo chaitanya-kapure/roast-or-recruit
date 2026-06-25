@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "./context/AuthContext.jsx";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import Hero from "./components/Hero.jsx";
@@ -20,6 +20,7 @@ import VerifyOtp from "./pages/VerifyOtp.jsx";
 
 function HomePage() {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState("landing");
   const [mode, setMode] = useState(null);
   const [file, setFile] = useState(null);
@@ -29,6 +30,7 @@ function HomePage() {
   const location = useLocation();
 
   const selectMode = (selectedMode) => {
+    if (!token) { navigate("/login"); return; }
     setMode(selectedMode);
     setStep("upload");
     setFile(null);

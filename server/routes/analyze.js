@@ -69,6 +69,10 @@ router.post("/roast", upload.single("resume"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
     const email = getUserEmail(req);
+    if (!email) {
+      if (req.file) await fs.unlink(req.file.path).catch(() => {});
+      return res.status(401).json({ error: "Sign in required to analyze" });
+    }
     const limit = await checkRateLimit(email, req.ip);
     if (!limit.allowed) {
       if (req.file) await fs.unlink(req.file.path).catch(() => {});
@@ -100,6 +104,10 @@ router.post("/recruit", upload.single("resume"), async (req, res) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
     const email = getUserEmail(req);
+    if (!email) {
+      if (req.file) await fs.unlink(req.file.path).catch(() => {});
+      return res.status(401).json({ error: "Sign in required to analyze" });
+    }
     const limit = await checkRateLimit(email, req.ip);
     if (!limit.allowed) {
       if (req.file) await fs.unlink(req.file.path).catch(() => {});
