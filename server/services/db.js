@@ -106,8 +106,8 @@ export async function getStats() {
 }
 
 export async function getLeaderboard({ mode, limit = 10 } = {}) {
-  // Use rankingScore for sorting if available, fall back to score for backwards compatibility
-  const filter = { success: true, userEmail: { $ne: null, $ne: "", $exists: true } };
+  // Use rankingScore for sorting; exclude old fallback entries (no rankingScore)
+  const filter = { success: true, userEmail: { $ne: null, $ne: "", $exists: true }, rankingScore: { $exists: true, $ne: null } };
   if (mode) filter.mode = mode;
 
   if (mode) {
