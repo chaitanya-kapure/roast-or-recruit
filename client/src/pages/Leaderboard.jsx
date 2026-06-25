@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Flame, Briefcase, Trophy, Medal, Skull } from "lucide-react";
+import { ArrowLeft, Trophy, Medal, Skull } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext.jsx";
 
@@ -59,7 +59,6 @@ export default function Leaderboard() {
             }`}
             style={tab === "roast" ? { backgroundColor: 'var(--accent-glow)', color: 'var(--accent)', borderColor: 'var(--accent-glow)' } : { backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', borderColor: 'var(--border)' }}
           >
-            <Flame className="w-4 h-4" />
             Roasts
           </button>
           <button
@@ -69,7 +68,6 @@ export default function Leaderboard() {
             }`}
             style={tab === "recruit" ? { backgroundColor: 'var(--accent-glow)', color: 'var(--accent-secondary)', borderColor: 'var(--accent-glow)' } : { backgroundColor: 'var(--bg-card)', color: 'var(--text-muted)', borderColor: 'var(--border)' }}
           >
-            <Briefcase className="w-4 h-4" />
             Recruits
           </button>
         </div>
