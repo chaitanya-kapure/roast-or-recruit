@@ -17,6 +17,8 @@ import Leaderboard from "./pages/Leaderboard.jsx";
 import Signup from "./pages/Signup.jsx";
 import Login from "./pages/Login.jsx";
 import VerifyOtp from "./pages/VerifyOtp.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import Profile from "./pages/Profile.jsx";
 
 function HomePage() {
   const { token } = useAuth();
@@ -185,6 +187,8 @@ export default function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/login" element={<Login />} />
       <Route path="/verify-otp" element={<VerifyOtp />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<HomePage />} />
     </Routes>
   );

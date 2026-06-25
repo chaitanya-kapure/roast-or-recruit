@@ -6,7 +6,7 @@ export default function Header({ onBack }) {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
-  const isInfoPage = ["/about", "/privacy", "/contact", "/signup", "/login", "/verify-otp"].includes(location.pathname);
+  const isInfoPage = ["/about", "/privacy", "/contact", "/signup", "/login", "/verify-otp", "/forgot-password", "/profile"].includes(location.pathname);
 
   const navLinks = [
     { to: "/leaderboard", label: "Leaderboard" },
@@ -49,8 +49,13 @@ export default function Header({ onBack }) {
                   </Link>
                 ))}
                 {user ? (
-                  <div className="flex items-center gap-2 ml-2 pl-3 border-l border-white/10">
-                    <span className="text-xs text-purple-400 font-medium truncate max-w-[100px]">{user.email}</span>
+                  <div className="flex items-center gap-1 ml-2 pl-3 border-l border-white/10">
+                    <Link
+                      to="/profile"
+                      className="px-3 py-1.5 rounded-lg text-xs text-purple-400 hover:text-purple-300 hover:bg-white/5 transition-all"
+                    >
+                      Profile
+                    </Link>
                     <button
                       onClick={logout}
                       className="px-3 py-1.5 rounded-lg text-xs text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all"
@@ -113,8 +118,14 @@ export default function Header({ onBack }) {
             ))}
             <div className="pt-2 border-t border-white/10 mt-2">
               {user ? (
-                <div className="space-y-2">
-                  <span className="block px-3 py-1.5 text-xs text-purple-400 truncate">{user.email}</span>
+                <div className="space-y-1">
+                  <Link
+                    to="/profile"
+                    onClick={() => setMenuOpen(false)}
+                    className="block px-3 py-2.5 rounded-lg text-sm text-purple-400 hover:bg-purple-500/10 transition-all"
+                  >
+                    Profile
+                  </Link>
                   <button
                     onClick={() => { logout(); setMenuOpen(false); }}
                     className="block w-full text-left px-3 py-2.5 rounded-lg text-sm text-red-400 hover:bg-red-500/10 transition-all"
