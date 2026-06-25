@@ -45,7 +45,7 @@ export default function Leaderboard() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-6" style={{ backgroundColor: 'var(--accent-glow)', border: '1px solid var(--accent-glow)' }}>
             <Trophy className="w-8 h-8" style={{ color: 'var(--accent-secondary)' }} />
           </div>
-          <h1 className="text-4xl md:text-5xl font-black mb-4 bg-clip-text text-transparent" style={{ backgroundImage: 'var(--gradient-accent)' }}>
+          <h1 className="text-4xl md:text-5xl font-black mb-4" style={{ color: 'var(--accent)' }}>
             Leaderboard
           </h1>
           <p style={{ color: 'var(--text-muted)' }} className="text-sm">The most brutally roasted and top-scoring resumes.</p>
