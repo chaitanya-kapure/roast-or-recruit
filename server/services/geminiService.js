@@ -320,7 +320,7 @@ export class GeminiService {
       }
 
       console.log(`[GeminiService] Using local fallback (${isQuota ? 'quota' : isOverload ? 'overload' : isTimeout ? 'timeout' : 'error'})`);
-      const fallback = fallbackFn(resumeText);
+      const fallback = await fallbackFn(resumeText);
       if (!fallback) {
         throw new Error("Fallback function returned null/undefined");
       }
