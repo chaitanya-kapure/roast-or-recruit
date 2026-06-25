@@ -10,7 +10,7 @@ export default function ForgotPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [cooldown, setCooldown] = useState(30);
+  const [cooldown, setCooldown] = useState(0);
   const [resending, setResending] = useState(false);
   const inputs = useRef([]);
   const navigate = useNavigate();
