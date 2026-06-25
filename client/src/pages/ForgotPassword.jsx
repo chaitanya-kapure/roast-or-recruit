@@ -10,7 +10,7 @@ export default function ForgotPassword() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
+  const [cooldown, setCooldown] = useState(30);
   const [resending, setResending] = useState(false);
   const inputs = useRef([]);
   const navigate = useNavigate();
@@ -56,38 +56,21 @@ export default function ForgotPassword() {
     if (e.key === "Backspace" && !otp[i] && i > 0) inputs.current[i - 1]?.focus();
   };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
+  const handleOtpNext = () => {
     const code = otp.join("");
     if (code.length !== 6) return;
-    setError("");
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: code }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
-      setStep("reset");
-      setOtp(["", "", "", "", "", ""]);
-    } catch (err) {
-      setError(err.message);
-      setOtp(["", "", "", "", "", ""]);
-    } finally {
-      setLoading(false);
-    }
+    setStep("reset");
   };
 
   const handleResend = async () => {
     if (cooldown > 0 || resending) return;
     setResending(true);
+    setError("");
     try {
       const res = await fetch("/api/auth/resend-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, type: "signup" }),
+        body: JSON.stringify({ email, type: "reset" }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -102,6 +85,8 @@ export default function ForgotPassword() {
 
   const handleReset = async (e) => {
     e.preventDefault();
+    const code = otp.join("");
+    if (code.length !== 6) { setError("Enter the complete OTP"); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters"); return; }
     setError("");
     setLoading(true);
@@ -109,13 +94,15 @@ export default function ForgotPassword() {
       const res = await fetch("/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, otp: "", password }),
+        body: JSON.stringify({ email, otp: code, password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setStep("done");
     } catch (err) {
       setError(err.message);
+      setOtp(["", "", "", "", "", ""]);
+      setStep("otp");
     } finally {
       setLoading(false);
     }
@@ -164,31 +151,29 @@ export default function ForgotPassword() {
               <h1 className="text-2xl font-bold text-gray-100 mb-2 text-center">Enter Reset Code</h1>
               <p className="text-gray-500 text-sm text-center mb-2">Enter the 6-digit code sent to</p>
               <p className="text-purple-400 text-sm font-medium text-center mb-6">{email}</p>
-              <form onSubmit={handleVerifyOtp}>
-                <div className="flex items-center justify-center gap-2 mb-6">
-                  {otp.map((d, i) => (
-                    <input
-                      key={i}
-                      ref={(el) => (inputs.current[i] = el)}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      value={d}
-                      onChange={(e) => handleOtpChange(i, e.target.value)}
-                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
-                      className="w-11 h-13 sm:w-12 sm:h-14 text-center bg-white/5 border border-white/10 rounded-xl text-xl font-bold text-gray-200 focus:outline-none focus:border-purple-500/40 transition-colors"
-                    />
-                  ))}
-                </div>
-                {error && <p className="text-red-400 text-xs mb-4">{error}</p>}
-                <button
-                  type="submit"
-                  disabled={loading || otp.join("").length !== 6}
-                  className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 transition-all disabled:opacity-50 text-sm"
-                >
-                  {loading ? "Verifying..." : "Verify OTP"}
-                </button>
-              </form>
+              <div className="flex items-center justify-center gap-2 mb-6">
+                {otp.map((d, i) => (
+                  <input
+                    key={i}
+                    ref={(el) => (inputs.current[i] = el)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={d}
+                    onChange={(e) => handleOtpChange(i, e.target.value)}
+                    onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                    className="w-11 h-13 sm:w-12 sm:h-14 text-center bg-white/5 border border-white/10 rounded-xl text-xl font-bold text-gray-200 focus:outline-none focus:border-purple-500/40 transition-colors"
+                  />
+                ))}
+              </div>
+              {error && <p className="text-red-400 text-xs mb-4">{error}</p>}
+              <button
+                onClick={handleOtpNext}
+                disabled={otp.join("").length !== 6}
+                className="w-full py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 transition-all disabled:opacity-50 text-sm"
+              >
+                Continue
+              </button>
               <div className="mt-4 text-center">
                 <button
                   onClick={handleResend}
