@@ -1,0 +1,5 @@
+John Doe
+Full Stack Developer
+Skills: React, Node.js, Python
+Intern at ABC Corp
+B.S. Computer Science
