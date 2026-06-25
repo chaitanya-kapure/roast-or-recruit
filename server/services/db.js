@@ -18,9 +18,57 @@ export async function connectDb() {
   }
 }
 
-export async function logUsage({ mode, fileName, fileSize, score, verdict, success = true, cached = false, userEmail }) {
+export async function logUsage({ 
+  mode, 
+  fileName, 
+  fileSize, 
+  score, 
+  verdict, 
+  success = true, 
+  cached = false, 
+  userEmail,
+  // New ranking system fields
+  displayScore,
+  rankingScore,
+  // Recruit tie-breaker fields
+  completenessScore,
+  achievementsCount,
+  metricsCount,
+  skillRelevanceCount,
+  resumeQualityScore,
+  // Roast tie-breaker fields
+  totalRoastPoints,
+  weaknessesCount,
+  missingSectionsCount,
+  grammarIssueCount,
+  formattingIssueCount,
+  // Submission timestamp
+  submissionTimestamp,
+}) {
   try {
-    await UsageLog.create({ mode, fileName, fileSize, score, verdict, success, cached, userEmail });
+    await UsageLog.create({ 
+      mode, 
+      fileName, 
+      fileSize, 
+      score, 
+      verdict, 
+      success, 
+      cached, 
+      userEmail,
+      displayScore,
+      rankingScore,
+      completenessScore,
+      achievementsCount,
+      metricsCount,
+      skillRelevanceCount,
+      resumeQualityScore,
+      totalRoastPoints,
+      weaknessesCount,
+      missingSectionsCount,
+      grammarIssueCount,
+      formattingIssueCount,
+      submissionTimestamp,
+    });
   } catch (err) {
     console.error("[DB] Failed to log usage:", err.message);
   }
@@ -58,19 +106,28 @@ export async function getStats() {
 }
 
 export async function getLeaderboard({ mode, limit = 10 } = {}) {
-  const filter = { score: { $ne: null }, success: true, userEmail: { $ne: null, $ne: "", $exists: true } };
+  // Use rankingScore for sorting if available, fall back to score for backwards compatibility
+  const filter = { success: true, userEmail: { $ne: null, $ne: "", $exists: true } };
   if (mode) filter.mode = mode;
 
   if (mode) {
     return await UsageLog.find(filter)
-      .sort({ score: -1 })
+      .sort({ rankingScore: -1, score: -1, submissionTimestamp: 1 }) // rankingScore primary, score secondary, earliest submission wins ties
       .limit(limit)
-      .select("userEmail fileName score verdict createdAt")
+      .select("userEmail fileName score verdict createdAt displayScore rankingScore submissionTimestamp")
       .lean();
   }
   const [roast, recruit] = await Promise.all([
-    UsageLog.find({ ...filter, mode: "roast" }).sort({ score: -1 }).limit(limit).select("userEmail fileName score verdict createdAt").lean(),
-    UsageLog.find({ ...filter, mode: "recruit" }).sort({ score: -1 }).limit(limit).select("userEmail fileName score verdict createdAt").lean(),
+    UsageLog.find({ ...filter, mode: "roast" })
+      .sort({ rankingScore: -1, score: -1, submissionTimestamp: 1 })
+      .limit(limit)
+      .select("userEmail fileName score verdict createdAt displayScore rankingScore submissionTimestamp")
+      .lean(),
+    UsageLog.find({ ...filter, mode: "recruit" })
+      .sort({ rankingScore: -1, score: -1, submissionTimestamp: 1 })
+      .limit(limit)
+      .select("userEmail fileName score verdict createdAt displayScore rankingScore submissionTimestamp")
+      .lean(),
   ]);
   return { roast, recruit };
 }

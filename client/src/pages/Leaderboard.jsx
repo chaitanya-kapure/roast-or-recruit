@@ -91,7 +91,7 @@ export default function Leaderboard() {
                     {BadgeIcon ? (
                       <BadgeIcon className="w-5 h-5" style={{ color: badge.color }} />
                     ) : (
-                      <span className="text-sm font-bold" style={{ color: 'var(--text-muted)' }}>{i + 1}</span>
+                      <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>#{i + 1}</span>
                     )}
                   </div>
 
@@ -111,11 +111,11 @@ export default function Leaderboard() {
 
                   <div className="text-right shrink-0">
                     <div className="text-2xl font-black" style={{ color: tab === "roast" ? 'var(--accent)' : 'var(--accent-secondary)' }}>
-                      {entry.score}
+                      {entry.displayScore || entry.score}
                       <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>/100</span>
                     </div>
                     <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                      {new Date(entry.createdAt || entry.created_at).toLocaleDateString()}
+                      {new Date(entry.submissionTimestamp || entry.createdAt || entry.created_at).toLocaleDateString()}
                     </div>
                   </div>
                 </div>

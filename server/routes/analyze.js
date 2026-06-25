@@ -8,6 +8,13 @@ import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import pdfParse from "pdf-parse";
+import { 
+  analyzeResumeMetrics, 
+  analyzeRoastMetrics, 
+  calculateRecruitRankingScore, 
+  calculateRoastRankingScore,
+  enhanceScorePrecision 
+} from "../services/scoringService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -86,8 +93,45 @@ router.post("/roast", upload.single("resume"), async (req, res) => {
     const service = createGeminiService();
     const { data: result, cached } = await service.analyzeRoast(text);
     await fs.unlink(req.file.path).catch(() => {});
-    console.log(`[Roast] Result: brutalityScore=${result.brutalityScore}, roasts=${result.roasts?.length}`);
-    await logUsage({ mode: "roast", fileName: req.file.originalname, fileSize: req.file.size, score: result.brutalityScore, verdict: result.verdict, cached: cached ? 1 : 0, userEmail: email, ip: email ? undefined : req.ip });
+    
+    // Analyze resume text for tie-breaker metrics
+    const resumeMetrics = analyzeResumeMetrics(text);
+    
+    // Analyze roast result for tie-breaker metrics
+    const roastMetrics = analyzeRoastMetrics(result);
+    
+    // Calculate ranking score
+    const rankingScore = calculateRoastRankingScore({
+      brutalityScore: result.brutalityScore,
+      ...roastMetrics,
+      resumeMetrics,
+    });
+    
+    // Enhance precision for deterministic scoring
+    const enhancedRankingScore = enhanceScorePrecision(rankingScore, resumeMetrics);
+    
+    console.log(`[Roast] Result: brutalityScore=${result.brutalityScore}, roasts=${result.roasts?.length}, rankingScore=${enhancedRankingScore.toFixed(3)}`);
+    
+    // Store in database with all tie-breaker data
+    await logUsage({ 
+      mode: "roast", 
+      fileName: req.file.originalname, 
+      fileSize: req.file.size, 
+      score: result.brutalityScore, 
+      verdict: result.verdict, 
+      cached: cached ? 1 : 0, 
+      userEmail: email, 
+      ip: email ? undefined : req.ip,
+      displayScore: result.brutalityScore,
+      rankingScore: enhancedRankingScore,
+      totalRoastPoints: roastMetrics.totalRoastPoints,
+      weaknessesCount: roastMetrics.weaknessesCount,
+      missingSectionsCount: roastMetrics.missingSectionsCount,
+      grammarIssueCount: roastMetrics.grammarIssueCount,
+      formattingIssueCount: roastMetrics.formattingIssueCount,
+      submissionTimestamp: new Date(),
+    });
+    
     safeJson(res, { ...result, _rateLimit: { used: limit.used + 1, limit: MAX_ANALYSES } });
   } catch (err) {
     if (req.file) await fs.unlink(req.file.path).catch(() => {});
@@ -121,8 +165,41 @@ router.post("/recruit", upload.single("resume"), async (req, res) => {
     const service = createGeminiService();
     const { data: result, cached } = await service.analyzeRecruit(text);
     await fs.unlink(req.file.path).catch(() => {});
-    console.log(`[Recruit] Result: atsScore=${result.atsScore}, recommendation=${result.recommendation}`);
-    await logUsage({ mode: "recruit", fileName: req.file.originalname, fileSize: req.file.size, score: result.atsScore, verdict: result.recommendation, cached: cached ? 1 : 0, userEmail: email, ip: email ? undefined : req.ip });
+    
+    // Analyze resume text for tie-breaker metrics
+    const resumeMetrics = analyzeResumeMetrics(text);
+    
+    // Calculate ranking score
+    const rankingScore = calculateRecruitRankingScore({
+      atsScore: result.atsScore,
+      ...resumeMetrics,
+    });
+    
+    // Enhance precision for deterministic scoring
+    const enhancedRankingScore = enhanceScorePrecision(rankingScore, resumeMetrics);
+    
+    console.log(`[Recruit] Result: atsScore=${result.atsScore}, recommendation=${result.recommendation}, rankingScore=${enhancedRankingScore.toFixed(3)}`);
+    
+    // Store in database with all tie-breaker data
+    await logUsage({ 
+      mode: "recruit", 
+      fileName: req.file.originalname, 
+      fileSize: req.file.size, 
+      score: result.atsScore, 
+      verdict: result.recommendation, 
+      cached: cached ? 1 : 0, 
+      userEmail: email, 
+      ip: email ? undefined : req.ip,
+      displayScore: result.atsScore,
+      rankingScore: enhancedRankingScore,
+      completenessScore: resumeMetrics.completenessScore,
+      achievementsCount: resumeMetrics.achievementsCount,
+      metricsCount: resumeMetrics.metricsCount,
+      skillRelevanceCount: resumeMetrics.skillRelevanceCount,
+      resumeQualityScore: resumeMetrics.resumeQualityScore,
+      submissionTimestamp: new Date(),
+    });
+    
     safeJson(res, { ...result, _rateLimit: { used: limit.used + 1, limit: MAX_ANALYSES } });
   } catch (err) {
     if (req.file) await fs.unlink(req.file.path).catch(() => {});
