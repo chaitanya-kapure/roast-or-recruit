@@ -106,28 +106,69 @@ export async function getStats() {
 }
 
 export async function getLeaderboard({ mode, limit = 10 } = {}) {
-  // Use rankingScore for sorting; exclude old fallback entries (no rankingScore)
-  const filter = { success: true, userEmail: { $ne: null, $ne: "", $exists: true }, rankingScore: { $exists: true, $ne: null } };
-  if (mode) filter.mode = mode;
+  const matchStage = { success: true, userEmail: { $ne: null, $ne: "", $exists: true }, rankingScore: { $exists: true, $ne: null } };
+  if (mode) matchStage.mode = mode;
+
+  const pipeline = [
+    { $match: matchStage },
+    { $sort: { rankingScore: -1, submissionTimestamp: 1 } },
+    { $group: {
+      _id: "$userEmail",
+      bestScore: { $first: "$score" },
+      bestDisplayScore: { $first: "$displayScore" },
+      bestRankingScore: { $first: "$rankingScore" },
+      verdict: { $first: "$verdict" },
+      fileName: { $first: "$fileName" },
+      submissionTimestamp: { $first: "$submissionTimestamp" },
+      createdAt: { $first: "$createdAt" },
+    }},
+    { $sort: { bestRankingScore: -1, submissionTimestamp: 1 } },
+    { $limit: limit },
+    { $project: {
+      _id: 0,
+      userEmail: "$_id",
+      score: "$bestScore",
+      displayScore: "$bestDisplayScore",
+      rankingScore: "$bestRankingScore",
+      verdict: 1,
+      fileName: 1,
+      submissionTimestamp: 1,
+      createdAt: 1,
+    }},
+  ];
 
   if (mode) {
-    return await UsageLog.find(filter)
-      .sort({ rankingScore: -1, score: -1, submissionTimestamp: 1 }) // rankingScore primary, score secondary, earliest submission wins ties
-      .limit(limit)
-      .select("userEmail fileName score verdict createdAt displayScore rankingScore submissionTimestamp")
-      .lean();
+    return await UsageLog.aggregate(pipeline);
   }
   const [roast, recruit] = await Promise.all([
-    UsageLog.find({ ...filter, mode: "roast" })
-      .sort({ rankingScore: -1, score: -1, submissionTimestamp: 1 })
-      .limit(limit)
-      .select("userEmail fileName score verdict createdAt displayScore rankingScore submissionTimestamp")
-      .lean(),
-    UsageLog.find({ ...filter, mode: "recruit" })
-      .sort({ rankingScore: -1, score: -1, submissionTimestamp: 1 })
-      .limit(limit)
-      .select("userEmail fileName score verdict createdAt displayScore rankingScore submissionTimestamp")
-      .lean(),
+    UsageLog.aggregate([...pipeline]),
+    UsageLog.aggregate([
+      { $match: { ...matchStage, mode: "recruit" } },
+      { $sort: { rankingScore: -1, submissionTimestamp: 1 } },
+      { $group: {
+        _id: "$userEmail",
+        bestScore: { $first: "$score" },
+        bestDisplayScore: { $first: "$displayScore" },
+        bestRankingScore: { $first: "$rankingScore" },
+        verdict: { $first: "$verdict" },
+        fileName: { $first: "$fileName" },
+        submissionTimestamp: { $first: "$submissionTimestamp" },
+        createdAt: { $first: "$createdAt" },
+      }},
+      { $sort: { bestRankingScore: -1, submissionTimestamp: 1 } },
+      { $limit: limit },
+      { $project: {
+        _id: 0,
+        userEmail: "$_id",
+        score: "$bestScore",
+        displayScore: "$bestDisplayScore",
+        rankingScore: "$bestRankingScore",
+        verdict: 1,
+        fileName: 1,
+        submissionTimestamp: 1,
+        createdAt: 1,
+      }},
+    ]),
   ]);
   return { roast, recruit };
 }
