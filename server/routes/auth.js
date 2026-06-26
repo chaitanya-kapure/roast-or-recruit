@@ -9,8 +9,6 @@ import Otp from "../models/Otp.js";
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-
 let gmailClient;
 function getGmailClient() {
   if (gmailClient) return gmailClient;
@@ -54,35 +52,6 @@ async function createTransporter() {
     });
   }
   return null;
-}
-
-async function sendEmailViaResend(to, subject, html) {
-  if (!RESEND_API_KEY) return false;
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "RoastOrRecruit Security Team <onboarding@resend.dev>",
-        to,
-        subject,
-        html,
-      }),
-    });
-    if (!res.ok) {
-      const text = await res.text();
-      console.log(`[Auth] Resend API error: ${res.status} ${text}`);
-      return false;
-    }
-    console.log(`[Auth] Email sent via Resend to ${to}`);
-    return true;
-  } catch (err) {
-    console.log(`[Auth] Resend fetch error: ${err.message}`);
-    return false;
-  }
 }
 
 async function sendEmailViaSmtp(to, subject, html) {
@@ -204,7 +173,6 @@ async function sendOtpEmail(email, otp, type = "signup") {
   const html = buildOtpEmailHtml(otp, type);
 
   if (await sendEmailViaGmail(email, subject, html)) return true;
-  if (await sendEmailViaResend(email, subject, html)) return true;
   if (await sendEmailViaSmtp(email, subject, html)) return true;
   console.error(`[Auth] Email delivery FAILED for ${email} (type: ${type})`);
   return false;
