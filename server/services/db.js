@@ -111,7 +111,7 @@ export async function getLeaderboard({ mode, limit = 10 } = {}) {
 
   const pipeline = [
     { $match: matchStage },
-    { $sort: { rankingScore: -1, submissionTimestamp: 1 } },
+    { $sort: { displayScore: -1, submissionTimestamp: 1 } },
     { $group: {
       _id: "$userEmail",
       bestScore: { $first: "$score" },
@@ -122,7 +122,7 @@ export async function getLeaderboard({ mode, limit = 10 } = {}) {
       submissionTimestamp: { $first: "$submissionTimestamp" },
       createdAt: { $first: "$createdAt" },
     }},
-    { $sort: { bestRankingScore: -1, submissionTimestamp: 1 } },
+    { $sort: { bestDisplayScore: -1, submissionTimestamp: 1 } },
     { $limit: limit },
     { $project: {
       _id: 0,
@@ -144,7 +144,7 @@ export async function getLeaderboard({ mode, limit = 10 } = {}) {
     UsageLog.aggregate([...pipeline]),
     UsageLog.aggregate([
       { $match: { ...matchStage, mode: "recruit" } },
-      { $sort: { rankingScore: -1, submissionTimestamp: 1 } },
+      { $sort: { displayScore: -1, submissionTimestamp: 1 } },
       { $group: {
         _id: "$userEmail",
         bestScore: { $first: "$score" },
@@ -155,7 +155,7 @@ export async function getLeaderboard({ mode, limit = 10 } = {}) {
         submissionTimestamp: { $first: "$submissionTimestamp" },
         createdAt: { $first: "$createdAt" },
       }},
-      { $sort: { bestRankingScore: -1, submissionTimestamp: 1 } },
+      { $sort: { bestDisplayScore: -1, submissionTimestamp: 1 } },
       { $limit: limit },
       { $project: {
         _id: 0,
