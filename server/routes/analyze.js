@@ -215,4 +215,58 @@ router.get("/leaderboard", async (req, res) => {
   safeJson(res, await getLeaderboard({ mode, limit }));
 });
 
+function djb2Hash(str) {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) + str.charCodeAt(i);
+    hash = hash & hash;
+  }
+  return Math.abs(hash);
+}
+
+router.get("/admin/migrate-scores", async (req, res) => {
+  try {
+    const results = {};
+    for (const mode of ["roast", "recruit"]) {
+      const entries = await UsageLog.find({
+        mode, success: true,
+        userEmail: { $ne: null, $ne: "", $exists: true },
+      }).sort({ createdAt: 1 }).lean();
+
+      const usedScores = new Set();
+      let updated = 0;
+
+      for (const entry of entries) {
+        let score = entry.displayScore ?? entry.score ?? 50;
+        score = Math.round(score * 10) / 10;
+        score = Math.min(100, Math.max(0, score));
+
+        if (usedScores.has(score)) {
+          const seed = (entry.fileName || "") + (entry.userEmail || "") + String(entry.createdAt);
+          const h = djb2Hash(seed);
+          const direction = h % 2 === 0 ? 1 : -1;
+          let offset = 0.1;
+          let candidate = score;
+          for (let attempt = 0; attempt < 50; attempt++) {
+            candidate = Math.round((score + direction * offset) * 10) / 10;
+            if (candidate > 100) candidate = Math.round((100 - (candidate - 100)) * 10) / 10;
+            if (candidate < 0) candidate = Math.round(Math.abs(candidate) * 10) / 10;
+            candidate = Math.min(100, Math.max(0, candidate));
+            if (!usedScores.has(candidate)) break;
+            offset += 0.1;
+          }
+          score = candidate;
+          await UsageLog.updateOne({ _id: entry._id }, { $set: { displayScore: score } });
+          updated++;
+        }
+        usedScores.add(score);
+      }
+      results[mode] = { total: entries.length, updated, uniqueScores: usedScores.size };
+    }
+    safeJson(res, results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 export default router;
