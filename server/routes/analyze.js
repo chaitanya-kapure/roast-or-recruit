@@ -13,7 +13,8 @@ import {
   analyzeRoastMetrics, 
   calculateRecruitRankingScore, 
   calculateRoastRankingScore,
-  enhanceScorePrecision 
+  enhanceScorePrecision,
+  normalizeDisplayScore 
 } from "../services/scoringService.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -94,35 +95,28 @@ router.post("/roast", upload.single("resume"), async (req, res) => {
     const { data: result, cached } = await service.analyzeRoast(text);
     await fs.unlink(req.file.path).catch(() => {});
     
-    // Analyze resume text for tie-breaker metrics
+    // Normalize display score to ensure uniqueness across leaderboard
+    const rawBrutalityScore = typeof result.brutalityScore === "number" ? result.brutalityScore : parseFloat(result.brutalityScore) || 50;
+    const displayScore = await normalizeDisplayScore(rawBrutalityScore, "roast", req.file.originalname + text.length);
+    
+    // Calculate ranking score for internal sorting
     const resumeMetrics = analyzeResumeMetrics(text);
-    
-    // Analyze roast result for tie-breaker metrics
     const roastMetrics = analyzeRoastMetrics(result);
-    
-    // Calculate ranking score
-    const rankingScore = calculateRoastRankingScore({
-      brutalityScore: result.brutalityScore,
-      ...roastMetrics,
-      resumeMetrics,
-    });
-    
-    // Enhance precision for deterministic scoring
+    const rankingScore = calculateRoastRankingScore({ brutalityScore: rawBrutalityScore, ...roastMetrics, resumeMetrics });
     const enhancedRankingScore = enhanceScorePrecision(rankingScore, resumeMetrics);
     
-    console.log(`[Roast] Result: brutalityScore=${result.brutalityScore}, roasts=${result.roasts?.length}, rankingScore=${enhancedRankingScore.toFixed(3)}`);
+    console.log(`[Roast] Result: displayScore=${displayScore}, roasts=${result.roasts?.length}, rankingScore=${enhancedRankingScore.toFixed(3)}`);
     
-    // Store in database with all tie-breaker data
     await logUsage({ 
       mode: "roast", 
       fileName: req.file.originalname, 
       fileSize: req.file.size, 
-      score: result.brutalityScore, 
+      score: rawBrutalityScore, 
       verdict: result.verdict, 
       cached: cached ? 1 : 0, 
       userEmail: email, 
       ip: email ? undefined : req.ip,
-      displayScore: result.brutalityScore,
+      displayScore,
       rankingScore: enhancedRankingScore,
       totalRoastPoints: roastMetrics.totalRoastPoints,
       weaknessesCount: roastMetrics.weaknessesCount,
@@ -132,7 +126,7 @@ router.post("/roast", upload.single("resume"), async (req, res) => {
       submissionTimestamp: new Date(),
     });
     
-    safeJson(res, { ...result, _rateLimit: { used: limit.used + 1, limit: MAX_ANALYSES } });
+    safeJson(res, { ...result, brutalityScore: displayScore, _rateLimit: { used: limit.used + 1, limit: MAX_ANALYSES } });
   } catch (err) {
     if (req.file) await fs.unlink(req.file.path).catch(() => {});
     const msg = err?.message || err?.toString() || "Analysis failed";
@@ -166,31 +160,27 @@ router.post("/recruit", upload.single("resume"), async (req, res) => {
     const { data: result, cached } = await service.analyzeRecruit(text);
     await fs.unlink(req.file.path).catch(() => {});
     
-    // Analyze resume text for tie-breaker metrics
+    // Normalize display score to ensure uniqueness across leaderboard
+    const rawAtsScore = typeof result.atsScore === "number" ? result.atsScore : parseFloat(result.atsScore) || 50;
+    const displayScore = await normalizeDisplayScore(rawAtsScore, "recruit", req.file.originalname + text.length);
+    
+    // Calculate ranking score for internal sorting
     const resumeMetrics = analyzeResumeMetrics(text);
-    
-    // Calculate ranking score
-    const rankingScore = calculateRecruitRankingScore({
-      atsScore: result.atsScore,
-      ...resumeMetrics,
-    });
-    
-    // Enhance precision for deterministic scoring
+    const rankingScore = calculateRecruitRankingScore({ atsScore: rawAtsScore, ...resumeMetrics });
     const enhancedRankingScore = enhanceScorePrecision(rankingScore, resumeMetrics);
     
-    console.log(`[Recruit] Result: atsScore=${result.atsScore}, recommendation=${result.recommendation}, rankingScore=${enhancedRankingScore.toFixed(3)}`);
+    console.log(`[Recruit] Result: displayScore=${displayScore}, recommendation=${result.recommendation}, rankingScore=${enhancedRankingScore.toFixed(3)}`);
     
-    // Store in database with all tie-breaker data
     await logUsage({ 
       mode: "recruit", 
       fileName: req.file.originalname, 
       fileSize: req.file.size, 
-      score: result.atsScore, 
+      score: rawAtsScore, 
       verdict: result.recommendation, 
       cached: cached ? 1 : 0, 
       userEmail: email, 
       ip: email ? undefined : req.ip,
-      displayScore: result.atsScore,
+      displayScore,
       rankingScore: enhancedRankingScore,
       completenessScore: resumeMetrics.completenessScore,
       achievementsCount: resumeMetrics.achievementsCount,
@@ -200,7 +190,7 @@ router.post("/recruit", upload.single("resume"), async (req, res) => {
       submissionTimestamp: new Date(),
     });
     
-    safeJson(res, { ...result, _rateLimit: { used: limit.used + 1, limit: MAX_ANALYSES } });
+    safeJson(res, { ...result, atsScore: displayScore, _rateLimit: { used: limit.used + 1, limit: MAX_ANALYSES } });
   } catch (err) {
     if (req.file) await fs.unlink(req.file.path).catch(() => {});
     const msg = err?.message || err?.toString() || "Analysis failed";

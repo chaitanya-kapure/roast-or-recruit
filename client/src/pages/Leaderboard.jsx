@@ -111,7 +111,7 @@ export default function Leaderboard() {
 
                   <div className="text-right shrink-0">
                     <div className="text-2xl font-black" style={{ color: tab === "roast" ? 'var(--accent)' : 'var(--accent-secondary)' }}>
-                      {entry.displayScore || entry.score}
+                      {Number(entry.displayScore || entry.score).toFixed(1)}
                       <span className="text-xs font-normal" style={{ color: 'var(--text-muted)' }}>/100</span>
                     </div>
                     <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>

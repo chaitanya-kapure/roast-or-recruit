@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { GoogleGenAI } from "@google/genai";
 import UsageLog from "../models/UsageLog.js";
+import { normalizeDisplayScore } from "../services/scoringService.js";
 
 const MODEL = "gemini-2.5-flash";
 const TIMEOUT_MS = 30000;
@@ -22,7 +23,7 @@ Return ONLY valid JSON:
 {
   "summary": "2-3 sentence roast of the overall resume feel",
   "roasts": ["specific roast targeting something in THIS resume"],
-  "brutalityScore": 0-100,
+  "brutalityScore": 0-100 with one decimal place (e.g. 64.7, 72.3, 45.1),
   "verdict": "one-liner closing punch"
 }
 
@@ -31,11 +32,12 @@ Rules:
 - Use specific details from the resume (names, numbers, skills, companies)
 - Sound like a real human, not a template
 - No generic "your resume needs work" — be SPECIFIC
+- brutalityScore MUST have one decimal place (e.g. 73.4, NOT 73)
 - No markdown. JSON only.`;
 
 const RECRUIT_SYSTEM_PROMPT = `You are a technical recruiter evaluating a resume. Return ONLY valid JSON:
 {
-  "atsScore": 0-100,
+  "atsScore": 0-100 with one decimal place (e.g. 73.2, 55.8, 88.5),
   "summary": "brief evaluation",
   "strengths": ["s1"],
   "weaknesses": ["w1"],
@@ -44,7 +46,7 @@ const RECRUIT_SYSTEM_PROMPT = `You are a technical recruiter evaluating a resume
   "projectFeedback": [{"name":"","feedback":"","rating":"Good|Average|Poor"}],
   "recommendation": "Strong Candidate|Consider for Interview|Needs Improvement"
 }
-Rules: 3-5 each. No markdown. JSON only.`;
+Rules: 3-5 each. atsScore MUST have one decimal place (e.g. 73.2, NOT 73). No markdown. JSON only.`;
 
 function analyzeResumeContent(resumeText) {
   const text = resumeText.toLowerCase();
@@ -105,27 +107,6 @@ function hashString(str) {
   return Math.abs(hash);
 }
 
-async function findExistingScores(mode) {
-  try {
-    const scores = await UsageLog.distinct("score", { mode, success: true, score: { $ne: null } }).lean();
-    return new Set(scores);
-  } catch {
-    return new Set();
-  }
-}
-
-function pickScoreNear(base, existingScores, min, max) {
-  let score = base;
-  let attempts = 0;
-  while (existingScores.has(score) && attempts < 50) {
-    score = score + (attempts % 2 === 0 ? 1 : -1) * Math.ceil((attempts + 1) / 2);
-    if (score > max) score = min + (score - max);
-    if (score < min) score = max - (min - score);
-    attempts++;
-  }
-  return Math.min(max, Math.max(min, score));
-}
-
 async function fallbackRoast(resumeText) {
   const content = analyzeResumeContent(resumeText);
   const h = hashString(resumeText);
@@ -140,10 +121,12 @@ async function fallbackRoast(resumeText) {
   baseScore += Math.min(5, content.paragraphCount * 0.5);
 
   baseScore = Math.min(100, Math.max(15, baseScore));
-  baseScore = Math.round(baseScore);
 
-  const existingScores = await findExistingScores("roast");
-  const brutalityScore = pickScoreNear(baseScore, existingScores, 15, 100);
+  const decimalPart = ((h % 900) + 100) / 1000;
+  const rawScore = Math.round((baseScore + decimalPart) * 10) / 10;
+
+  const seed = resumeText.substring(0, 100) + h;
+  const brutalityScore = await normalizeDisplayScore(rawScore, "roast", seed);
 
   const roasts = [];
   if (content.wordCount < 200) roasts.push("Your resume is shorter than a tweet. We expected at least a paragraph.");
@@ -197,10 +180,13 @@ async function fallbackRecruit(resumeText) {
   baseScore += Math.min(5, content.softSkillCount);
 
   baseScore = Math.min(100, Math.max(15, baseScore));
-  baseScore = Math.round(baseScore);
 
-  const existingScores = await findExistingScores("recruit");
-  const atsScore = pickScoreNear(baseScore, existingScores, 15, 100);
+  const h = hashString(resumeText);
+  const decimalPart = ((h % 900) + 100) / 1000;
+  const rawScore = Math.round((baseScore + decimalPart) * 10) / 10;
+
+  const seed = resumeText.substring(0, 100) + h;
+  const atsScore = await normalizeDisplayScore(rawScore, "recruit", seed);
 
   const strengths = [];
   const weaknesses = [];
