@@ -1,28 +1,14 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
-import { google } from "googleapis";
-import dns from "dns";
+import { Resend } from "resend";
 import User from "../models/User.js";
 import Otp from "../models/Otp.js";
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
-let gmailClient;
-function getGmailClient() {
-  if (gmailClient) return gmailClient;
-  if (process.env.GMAIL_CLIENT_ID && process.env.GMAIL_CLIENT_SECRET && process.env.GMAIL_REFRESH_TOKEN) {
-    const oauth2 = new google.auth.OAuth2(
-      process.env.GMAIL_CLIENT_ID,
-      process.env.GMAIL_CLIENT_SECRET,
-      "urn:ietf:wg:oauth:2.0:oob"
-    );
-    oauth2.setCredentials({ refresh_token: process.env.GMAIL_REFRESH_TOKEN });
-    gmailClient = google.gmail({ version: "v1", auth: oauth2 });
-  }
-  return gmailClient || null;
-}
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+const RESEND_FROM = process.env.RESEND_FROM || "RoastOrRecruit <onboarding@resend.dev>";
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -32,42 +18,22 @@ function createToken(user) {
   return jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
 }
 
-async function createTransporter() {
-  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-    const port = parseInt(process.env.SMTP_PORT) || 587;
-    const host = process.env.SMTP_HOST || "smtp.gmail.com";
-    let resolvedHost = host;
-    try {
-      const addresses = await dns.resolve4(host);
-      if (addresses.length > 0) resolvedHost = addresses[0];
-    } catch {}
-    return nodemailer.createTransport({
-      host: resolvedHost,
-      port,
-      secure: port === 465,
-      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-      tls: { rejectUnauthorized: false, servername: host },
-      connectionTimeout: 15000,
-      socketTimeout: 15000,
-    });
+async function sendEmail(to, subject, html) {
+  if (!resend) {
+    console.log(`[Auth] RESEND_API_KEY not set — email skipped for ${to}`);
+    return false;
   }
-  return null;
-}
-
-async function sendEmailViaSmtp(to, subject, html) {
-  const transporter = await createTransporter();
-  if (!transporter) return false;
   try {
-    await transporter.sendMail({
-      from: `"RoastOrRecruit Security Team" <${process.env.SMTP_USER}>`,
+    await resend.emails.send({
+      from: RESEND_FROM,
       to,
       subject,
       html,
     });
-    console.log(`[Auth] Email sent via SMTP to ${to}`);
+    console.log(`[Auth] Email sent via Resend to ${to}`);
     return true;
   } catch (err) {
-    console.log(`[Auth] SMTP error: ${err.message}`);
+    console.log(`[Auth] Resend error: ${err.message}`);
     return false;
   }
 }
@@ -137,43 +103,13 @@ function buildOtpEmailHtml(otp, type = "signup") {
 </html>`.trim();
 }
 
-async function sendEmailViaGmail(to, subject, html) {
-  const gmail = getGmailClient();
-  if (!gmail) return false;
-  try {
-    const utf8Bytes = Buffer.from(
-      `From: "RoastOrRecruit Security Team" <${process.env.GMAIL_USER}>\r\n` +
-      `To: ${to}\r\n` +
-      `Subject: ${subject}\r\n` +
-      `MIME-Version: 1.0\r\n` +
-      `Content-Type: text/html; charset=utf-8\r\n` +
-      `X-Priority: 1\r\n` +
-      `X-Mailer: RoastOrRecruit\r\n` +
-      `List-Unsubscribe: <mailto:support@roast-or-recruit.com?subject=unsubscribe>\r\n` +
-      `Precedence: bulk\r\n\r\n` +
-      `${html}`,
-      "utf-8"
-    );
-    await gmail.users.messages.send({
-      userId: "me",
-      requestBody: { raw: utf8Bytes.toString("base64url") },
-    });
-    console.log(`[Auth] Email sent via Gmail API to ${to}`);
-    return true;
-  } catch (err) {
-    console.log(`[Auth] Gmail API error: ${err.message}`);
-    return false;
-  }
-}
-
 async function sendOtpEmail(email, otp, type = "signup") {
   const subject = type === "reset"
     ? "Reset your RoastOrRecruit password — OTP enclosed"
     : "Verify your RoastOrRecruit email — OTP enclosed";
   const html = buildOtpEmailHtml(otp, type);
 
-  if (await sendEmailViaGmail(email, subject, html)) return true;
-  if (await sendEmailViaSmtp(email, subject, html)) return true;
+  if (await sendEmail(email, subject, html)) return true;
   console.error(`[Auth] Email delivery FAILED for ${email} (type: ${type})`);
   return false;
 }
