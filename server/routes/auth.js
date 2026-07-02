@@ -8,7 +8,14 @@ import Otp from "../models/Otp.js";
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-const RESEND_FROM = process.env.RESEND_FROM || "RoastOrRecruit <onboarding@resend.dev>";
+const RESEND_FROM = process.env.RESEND_FROM;
+
+if (!resend) {
+  console.error("[Auth] ⚠ RESEND_API_KEY not set — emails will not be sent");
+}
+if (!RESEND_FROM) {
+  console.error("[Auth] ⚠ RESEND_FROM not set — emails will not be sent");
+}
 
 function generateOtp() {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -19,8 +26,8 @@ function createToken(user) {
 }
 
 async function sendEmail(to, subject, html) {
-  if (!resend) {
-    console.log(`[Auth] RESEND_API_KEY not set — email skipped for ${to}`);
+  if (!resend || !RESEND_FROM) {
+    console.error(`[Auth] Email skipped — RESEND_API_KEY or RESEND_FROM not configured`);
     return false;
   }
   try {
@@ -93,7 +100,7 @@ function buildOtpEmailHtml(otp, type = "signup") {
           <td align="center" style="font-size:12px;color:#525252;line-height:1.6">
             Sent by <strong style="color:#737373">RoastOrRecruit Security Team</strong><br>
             You received this because someone attempted to ${type === "reset" ? "reset the password for your RoastOrRecruit account" : "create a RoastOrRecruit account with this email address"}.<br>
-            If you have questions, contact <a href="mailto:support@roast-or-recruit.com" style="color:#6b7280;text-decoration:underline">support@roast-or-recruit.com</a>
+            If you have questions, contact <a href="mailto:support@roastorrecruit.live" style="color:#6b7280;text-decoration:underline">support@roastorrecruit.live</a>
           </td>
         </tr>
       </table>
